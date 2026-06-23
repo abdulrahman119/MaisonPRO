@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta name="theme-color" content="#0A1628" />
+<title>MaisonPRO — Premium Real Estate Djibouti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============ ROOT & VARIABLES ============ */
+:root{
+  --navy:#0A1628;
+  --navy-2:#122038;
+  --navy-3:#1A2B47;
+  --gold:#C9A961;
+  --gold-2:#E0C380;
+  --gold-soft:rgba(201,169,97,.12);
+  --cream:#FAF7F0;
+  --cream-2:#F2ECE0;
+  --white:#ffffff;
+  --text:#1A2B47;
+  --text-soft:#5A6B87;
+  --border:rgba(10,22,40,.08);
+  --shadow-sm:0 2px 8px rgba(10,22,40,.06);
+  --shadow-md:0 10px 30px rgba(10,22,40,.08);
+  --shadow-lg:0 25px 60px rgba(10,22,40,.15);
+  --shadow-gold:0 10px 30px rgba(201,169,97,.25);
+  --success:#10B981;
+  --danger:#EF4444;
+  --warning:#F59E0B;
+  --info:#3B82F6;
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:24px;
+  --radius-xl:32px;
+  --font-ar:'Cairo', system-ui, sans-serif;
+  --font-en:'Inter', system-ui, sans-serif;
+  --font-display:'Playfair Display', Georgia, serif;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --djf-per-usd:177.721;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{
+  font-family:var(--font-ar);
+  background:var(--cream);
+  color:var(--text);
+  line-height:1.6;
+  overflow-x:hidden;
+  min-height:100vh;
+  max-width:100vw;
+}
+body[data-lang="en"], body[data-lang="fr"]{font-family:var(--font-en)}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--cream-2)}
+::-webkit-scrollbar-thumb{background:var(--navy-3);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+
+/* ============ NAVIGATION ============ */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(255,255,255,.85);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{
+  max-width:1400px;margin:0 auto;
+  padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0}
+.logo-mark{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  display:grid;place-items:center;
+  box-shadow:var(--shadow-md);
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+.logo-mark::after{
+  content:"";position:absolute;inset:2px;border-radius:10px;
+  border:1px solid var(--gold);opacity:.6;
+}
+.logo-mark svg{width:24px;height:24px;color:var(--gold)}
+.logo-text{min-width:0}
+.logo-text h1{
+  font-size:18px;font-weight:800;color:var(--navy);
+  letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+body[data-lang="en"] .logo-text h1, body[data-lang="fr"] .logo-text h1{font-family:var(--font-display);font-size:20px}
+.logo-text p{font-size:10px;color:var(--text-soft);font-weight:500;letter-spacing:.05em}
+
+.nav-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+
+/* ============ LANGUAGE MENU (Airbnb-style globe) ============ */
+.lang-wrap{position:relative}
+.lang-toggle{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--cream-2);border:none;
+  display:grid;place-items:center;
+  color:var(--navy);
+  transition:all .25s var(--ease);
+}
+.lang-toggle:hover{background:var(--navy);color:var(--gold)}
+.lang-toggle svg{width:19px;height:19px}
+.lang-menu{
+  position:fixed;top:64px;
+  inset-inline-end:12px;width:180px;
+  background:var(--white);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);
+  border:1px solid var(--border);
+  overflow:hidden;padding:6px;
+  opacity:0;visibility:hidden;transform:translateY(-10px);
+  transition:all .2s var(--ease);
+  z-index:150;
+}
+.lang-menu.open{opacity:1;visibility:visible;transform:translateY(0)}
+.lang-option{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:10px 12px;border:none;border-radius:var(--radius-sm);
+  background:transparent;color:var(--text);
+  font-weight:600;font-size:13px;text-align:start;
+  transition:background .2s var(--ease);
+}
+.lang-option:hover{background:var(--cream)}
+.lang-option.active{background:var(--gold-soft);color:var(--navy)}
+.lang-option .check{width:15px;height:15px;color:var(--gold);flex-shrink:0}
+
+.btn-nav{
+  padding:10px 16px;border-radius:999px;border:none;
+  font-weight:700;font-size:13px;
+  display:flex;align-items:center;gap:6px;
+  transition:all .3s var(--ease);
+}
+.btn-add{
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold-2) 100%);
+  color:var(--navy);
+  box-shadow:var(--shadow-gold);
+}
+.btn-add:hover{transform:translateY(-2px);box-shadow:0 15px 35px rgba(201,169,97,.35)}
+.btn-admin{
+  background:var(--navy);color:var(--gold);
+}
+.btn-admin:hover{background:var(--navy-3);transform:translateY(-2px)}
+.btn-nav svg{width:16px;height:16px}
+
+/* ============ NOTIFICATION BELL ============ */
+.notif-wrap{position:relative}
+.notif-btn{
+  position:relative;width:40px;height:40px;border-radius:50%;
+  background:var(--cream-2);border:none;
+  display:grid;place-items:center;
+  transition:all .25s var(--ease);
+}
+.notif-btn:hover{background:var(--navy)}
+.notif-btn svg{width:18px;height:18px;color:var(--navy);transition:color .25s}
+.notif-btn:hover svg{color:var(--gold)}
+.notif-badge{
+  position:absolute;top:2px;inset-inline-end:2px;
+  min-width:18px;height:18px;padding:0 5px;
+  background:var(--danger);color:#fff;
+  font-size:10px;font-weight:700;
+  border-radius:999px;display:grid;place-items:center;
+  border:2px solid #fff;
+  animation:notifPulse 2s infinite;
+}
+@keyframes notifPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}
+  50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}
+}
+.notif-panel{
+  position:fixed;top:64px;
+  inset-inline-end:12px;width:360px;max-width:calc(100vw - 24px);
+  background:var(--white);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);
+  border:1px solid var(--border);
+  overflow:hidden;
+  opacity:0;visibility:hidden;transform:translateY(-10px);
+  transition:all .25s var(--ease);
+  z-index:150;
+}
+.notif-panel.open{opacity:1;visibility:visible;transform:translateY(0)}
+.notif-head{
+  padding:14px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.notif-head h4{font-size:14px;font-weight:700;color:var(--navy)}
+.notif-clear{
+  background:transparent;border:none;color:var(--text-soft);
+  font-size:11px;font-weight:600;
+}
+.notif-clear:hover{color:var(--danger)}
+.notif-list{max-height:360px;overflow-y:auto}
+.notif-item{
+  padding:12px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;gap:10px;align-items:flex-start;
+  transition:background .2s;cursor:pointer;
+}
+.notif-item:last-child{border-bottom:none}
+.notif-item:hover{background:var(--cream)}
+.notif-item.unread{background:rgba(201,169,97,.06)}
+.notif-icon{
+  width:34px;height:34px;border-radius:10px;
+  display:grid;place-items:center;flex-shrink:0;
+  font-size:16px;
+}
+.notif-icon.property{background:rgba(59,130,246,.1);color:var(--info)}
+.notif-icon.request{background:rgba(201,169,97,.15);color:var(--gold)}
+.notif-icon.approve{background:rgba(16,185,129,.1);color:var(--success)}
+.notif-body{min-width:0;flex:1}
+.notif-body h5{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notif-body p{font-size:12px;color:var(--text-soft);line-height:1.5}
+.notif-body .time{font-size:10px;color:var(--text-soft);margin-top:3px;display:block;font-style:italic}
+.notif-empty{padding:36px 20px;text-align:center;color:var(--text-soft);font-size:12px}
+.notif-empty span{font-size:32px;display:block;margin-bottom:6px}
+
+@media (max-width:640px){
+  .btn-nav .btn-label{display:none}
+  .btn-nav{padding:9px 11px}
+  .logo-text p{display:none}
+  .lang-toggle{width:38px;height:38px}
+  .notif-btn{width:38px;height:38px}
+  .notif-panel{top:58px;inset-inline-end:8px;width:calc(100vw - 16px)}
+  .lang-menu{top:58px;inset-inline-end:8px}
+}
+
+/* ============ HERO ============ */
+.hero{
+  position:relative;
+  padding:clamp(36px,6vw,60px) 20px clamp(44px,8vw,72px);
+  background:
+    radial-gradient(ellipse at top right,rgba(201,169,97,.15) 0%,transparent 50%),
+    radial-gradient(ellipse at bottom left,rgba(10,22,40,.08) 0%,transparent 50%),
+    linear-gradient(180deg,var(--cream) 0%,var(--cream-2) 100%);
+  overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(10,22,40,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(10,22,40,.02) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse at center,black 30%,transparent 70%);
+  -webkit-mask-image:radial-gradient(ellipse at center,black 30%,transparent 70%);
+  pointer-events:none;
+}
+.hero-inner{max-width:1000px;margin:0 auto;position:relative;text-align:center}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(201,169,97,.15);color:var(--navy);
+  padding:7px 16px;border-radius:999px;
+  font-size:12px;font-weight:600;
+  border:1px solid rgba(201,169,97,.3);
+  margin-bottom:20px;
+}
+.hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 12px var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.hero h2{
+  font-size:clamp(28px,5.5vw,54px);
+  font-weight:900;color:var(--navy);
+  letter-spacing:-.03em;line-height:1.15;
+  margin-bottom:16px;
+}
+body[data-lang="en"] .hero h2, body[data-lang="fr"] .hero h2{font-family:var(--font-display)}
+.hero h2 .accent{
+  background:linear-gradient(135deg,var(--gold) 0%,#B8944C 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  font-style:italic;
+}
+.hero p{
+  font-size:clamp(14px,1.8vw,17px);color:var(--text-soft);
+  max-width:600px;margin:0 auto 28px;
+  padding:0 10px;
+}
+.hero-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  max-width:560px;margin:0 auto;
+}
+.hero-stat{
+  background:rgba(255,255,255,.6);
+  backdrop-filter:blur(10px);
+  padding:16px 12px;border-radius:var(--radius-md);
+  border:1px solid rgba(255,255,255,.8);
+  box-shadow:var(--shadow-sm);
+}
+.hero-stat .num{font-size:clamp(20px,3.5vw,26px);font-weight:800;color:var(--navy);display:block;line-height:1.2}
+.hero-stat .lbl{font-size:11px;color:var(--text-soft);font-weight:500}
+
+/* ============ CONTACT STRIP ============ */
+.contact-strip{
+  max-width:1400px;margin:-10px auto 0;
+  padding:0 20px;position:relative;z-index:2;
+}
+.contact-inner{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:14px 18px;
+  box-shadow:var(--shadow-md);
+  display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;
+}
+.contact-item{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--text);font-weight:600;
+  transition:color .25s;
+}
+.contact-item:hover{color:var(--gold)}
+.contact-item .ic{
+  width:34px;height:34px;border-radius:10px;
+  background:var(--gold-soft);color:var(--navy);
+  display:grid;place-items:center;flex-shrink:0;
+}
+.contact-item .ic svg{width:16px;height:16px}
+.contact-label{font-size:10px;color:var(--text-soft);font-weight:500;display:block}
+.contact-value{display:block;font-size:13px}
+
+/* ============ SECTIONS ============ */
+.section{padding:clamp(40px,7vw,64px) 20px;max-width:1400px;margin:0 auto}
+.section-head{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:28px;gap:16px;flex-wrap:wrap;
+}
+.section-head .title-wrap h3{
+  font-size:clamp(22px,3.8vw,34px);font-weight:800;color:var(--navy);
+  letter-spacing:-.02em;margin-bottom:6px;
+}
+body[data-lang="en"] .section-head .title-wrap h3,
+body[data-lang="fr"] .section-head .title-wrap h3{font-family:var(--font-display)}
+.section-head .title-wrap p{color:var(--text-soft);font-size:14px}
+.section-head .divider{
+  width:50px;height:4px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  border-radius:2px;margin-bottom:12px;
+}
+
+/* ============ FILTERS ============ */
+.filters{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;
+  padding:12px;background:var(--white);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);border:1px solid var(--border);
+  position:relative;z-index:10;
+}
+.filter-chip{
+  padding:9px 16px;border-radius:999px;border:none;
+  background:var(--cream);color:var(--text-soft);
+  font-weight:600;font-size:13px;
+  transition:all .25s var(--ease);
+}
+.filter-chip.active{background:var(--navy);color:var(--gold)}
+.filter-chip:hover:not(.active){background:var(--cream-2);color:var(--text)}
+.filter-search{
+  flex:1;min-width:180px;padding:9px 14px;border:none;
+  background:var(--cream);border-radius:999px;
+  font-size:13px;outline:none;font-family:inherit;
+}
+
+/* ============ PROPERTY CARDS ============ */
+.properties-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:22px;
+}
+.prop-card{
+  background:var(--white);
+  border-radius:var(--radius-lg);
+  overflow:visible;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+  transition:all .4s var(--ease);
+  display:flex;flex-direction:column;
+  animation:cardIn .5s var(--ease) both;
+  cursor:pointer;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.prop-card:hover{
+  transform:translateY(-6px);
+  box-shadow:var(--shadow-lg);
+  border-color:var(--gold-soft);
+}
+.prop-image{
+  position:relative;aspect-ratio:16/10;
+  background:linear-gradient(135deg,var(--navy-2),var(--navy));
+  overflow:visible;
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+}
+.prop-image img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+}
+.prop-image .pattern{
+  position:absolute;inset:0;opacity:.3;
+  background-image:
+    radial-gradient(circle at 20% 30%,rgba(201,169,97,.4) 0%,transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(201,169,97,.3) 0%,transparent 40%);
+}
+.prop-image .icon-house{
+  position:absolute;inset:0;display:grid;place-items:center;
+  color:rgba(201,169,97,.35);
+}
+.prop-image .icon-house svg{width:56px;height:56px}
+.prop-image .prop-img-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 60%,rgba(10,22,40,.4) 100%);
+  pointer-events:none;
+}
+.prop-image .img-count{
+  position:absolute;bottom:10px;inset-inline-end:10px;z-index:2;
+  background:rgba(10,22,40,.7);color:#fff;
+  padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;
+  display:flex;align-items:center;gap:4px;backdrop-filter:blur(6px);
+}
+.prop-image .img-count svg{width:12px;height:12px}
+.prop-badge{
+  position:absolute;top:8px;z-index:2;
+  padding:6px 14px;border-radius:999px;
+  font-size:12px;font-weight:700;letter-spacing:.05em;
+  backdrop-filter:blur(10px);
+}
+.prop-badge.type{inset-inline-start:8px;background:rgba(255,255,255,.95);color:var(--navy)}
+.prop-badge.rooms{inset-inline-end:8px;background:rgba(10,22,40,.85);color:var(--gold)}
+.prop-content{padding:20px;display:flex;flex-direction:column;flex:1;gap:12px}
+.prop-region{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--text-soft);font-weight:500;
+}
+.prop-region svg{width:14px;height:14px;color:var(--gold)}
+.prop-name{
+  font-size:18px;font-weight:700;color:var(--navy);line-height:1.3;
+}
+.prop-specs{
+  display:flex;gap:12px;flex-wrap:wrap;
+  font-size:12px;color:var(--text-soft);font-weight:600;
+}
+.prop-specs span{display:flex;align-items:center;gap:5px}
+.prop-specs svg{width:14px;height:14px;color:var(--gold)}
+.prop-views{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--text-soft);
+}
+.prop-views svg{width:13px;height:13px}
+.prop-price{
+  display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;
+  padding-top:12px;border-top:1px dashed var(--border);margin-top:4px;
+}
+.price-djf{font-size:20px;font-weight:800;color:var(--navy)}
+.price-sep{color:var(--text-soft);font-weight:300}
+.price-usd{font-size:15px;font-weight:600;color:var(--gold)}
+.price-label{font-size:11px;color:var(--text-soft);margin-inline-end:4px}
+.prop-actions{display:flex;gap:8px;margin-top:8px}
+.btn-rent{
+  flex:1;padding:12px;border:none;border-radius:var(--radius-md);
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  color:var(--gold);font-weight:700;font-size:13px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .3s var(--ease);
+}
+.btn-rent:hover{
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold-2) 100%);
+  color:var(--navy);
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-gold);
+}
+.btn-rent svg{width:16px;height:16px}
+.btn-share{
+  flex:1;padding:12px;border:none;border-radius:var(--radius-md);
+  background:linear-gradient(135deg,var(--navy-2) 0%,var(--navy-3) 100%);
+  color:var(--gold);font-weight:700;font-size:13px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .3s var(--ease);
+}
+.btn-share:hover{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-md);
+}
+.btn-share svg{width:16px;height:16px}
+.empty-state{
+  text-align:center;padding:60px 20px;
+  background:var(--white);border-radius:var(--radius-lg);
+  border:2px dashed var(--border);
+}
+.empty-state .emoji{font-size:48px;margin-bottom:14px;display:block;filter:grayscale(.3)}
+.empty-state h4{font-size:18px;color:var(--navy);margin-bottom:6px;font-weight:700}
+.empty-state p{color:var(--text-soft);font-size:13px}
+
+/* ============ AMENITY TAGS ============ */
+.amenity-tags{display:flex;flex-wrap:wrap;gap:6px}
+.amenity-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--gold-soft);color:var(--navy);
+  padding:5px 10px;border-radius:999px;
+  font-size:11px;font-weight:600;
+}
+.amenity-tag svg{width:13px;height:13px}
+.amenity-picker{
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.amenity-chip{
+  display:flex;align-items:center;gap:6px;
+  padding:9px 14px;border-radius:var(--radius-md);
+  border:1.5px solid var(--border);background:var(--white);
+  font-size:12px;font-weight:600;color:var(--text-soft);
+  transition:all .2s var(--ease);
+}
+.amenity-chip svg{width:15px;height:15px}
+.amenity-chip.selected{
+  border-color:var(--gold);background:var(--gold-soft);color:var(--navy);
+}
+
+/* ============ ADMIN PANEL ============ */
+.admin-panel{
+  background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);
+  padding:clamp(48px,8vw,72px) 20px 50px;
+  color:var(--cream);
+  position:relative;
+  overflow:hidden;
+}
+.admin-panel::before{
+  content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:80%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.admin-inner{max-width:1400px;margin:0 auto}
+.admin-head{margin-bottom:30px}
+.admin-head .title-wrap h3{color:var(--cream);font-size:clamp(22px,3.8vw,34px);font-weight:800;margin-bottom:6px}
+.admin-head .title-wrap p{color:rgba(250,247,240,.65);font-size:14px}
+.admin-head .divider{background:linear-gradient(90deg,var(--gold),transparent)}
+
+.admin-locked{
+  text-align:center;padding:50px 20px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--radius-lg);
+}
+.admin-locked .emoji{font-size:48px;margin-bottom:12px;display:block}
+.admin-locked h4{color:var(--cream);font-size:20px;margin-bottom:8px}
+.admin-locked p{color:rgba(250,247,240,.65);font-size:13px;margin-bottom:20px}
+
+.admin-tabs{
+  display:flex;gap:6px;margin-bottom:20px;
+  background:rgba(255,255,255,.05);padding:5px;border-radius:var(--radius-md);
+  border:1px solid rgba(255,255,255,.08);
+  overflow-x:auto;
+}
+.admin-tab{
+  flex:1;padding:10px 14px;border:none;border-radius:9px;
+  background:transparent;color:rgba(250,247,240,.65);
+  font-weight:600;font-size:13px;
+  transition:all .25s var(--ease);
+  white-space:nowrap;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.admin-tab.active{background:var(--gold);color:var(--navy)}
+.admin-tab .count{
+  padding:1px 7px;border-radius:999px;font-size:10px;
+  background:rgba(0,0,0,.2);color:inherit;
+}
+.admin-tab.active .count{background:var(--navy);color:var(--gold)}
+
+.admin-storage-bar{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:18px;padding:10px 14px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--radius-md);font-size:11px;color:rgba(250,247,240,.65);
+}
+.admin-storage-bar .bar-track{
+  flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;
+}
+.admin-storage-bar .bar-fill{height:100%;border-radius:999px;background:var(--gold);transition:width .3s var(--ease)}
+.admin-storage-bar.warn .bar-fill{background:var(--danger)}
+.admin-storage-bar .backup-btn{
+  background:rgba(201,169,97,.15);color:var(--gold);border:1px solid rgba(201,169,97,.3);
+  padding:6px 12px;border-radius:999px;font-weight:700;font-size:11px;white-space:nowrap;
+}
+.admin-storage-bar .backup-btn:hover{background:var(--gold);color:var(--navy)}
+
+.admin-list{display:flex;flex-direction:column;gap:14px}
+.admin-card{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--radius-lg);
+  padding:18px;
+  transition:all .3s var(--ease);
+  animation:slideIn .4s var(--ease) both;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+[dir="rtl"] @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.admin-card:hover{background:rgba(255,255,255,.06);border-color:rgba(201,169,97,.3)}
+
+.admin-card-main{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap}
+.admin-card-thumb{
+  width:80px;height:80px;border-radius:var(--radius-md);
+  overflow:hidden;background:linear-gradient(135deg,var(--navy-2),var(--navy));
+  display:grid;place-items:center;color:rgba(201,169,97,.35);
+  flex-shrink:0;
+}
+.admin-card-thumb img{width:100%;height:100%;object-fit:cover}
+.admin-card-thumb svg{width:32px;height:32px}
+.admin-card-info{flex:1;min-width:180px}
+.admin-card-info h4{
+  font-size:17px;font-weight:700;color:var(--cream);margin-bottom:4px;
+}
+.admin-card-info .meta{
+  display:flex;gap:10px;flex-wrap:wrap;font-size:12px;
+  color:rgba(250,247,240,.6);
+}
+.admin-card-info .meta span{display:flex;align-items:center;gap:4px}
+
+.status-pill{
+  padding:4px 10px;border-radius:999px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.status-pill::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.status-pill.pending{background:rgba(245,158,11,.15);color:#FBBF24}
+.status-pill.approved{background:rgba(16,185,129,.15);color:#34D399}
+.status-pill.rejected{background:rgba(239,68,68,.15);color:#F87171}
+.status-pill.confirmed{background:rgba(168,85,247,.15);color:#C084FC}
+
+.admin-card-prices{
+  display:flex;gap:14px;flex-wrap:wrap;
+  padding:10px 12px;background:rgba(10,22,40,.4);
+  border-radius:var(--radius-sm);margin-bottom:12px;
+}
+.admin-card-prices .price-box{font-size:12px;color:rgba(250,247,240,.7)}
+.admin-card-prices .price-box strong{color:var(--gold);font-size:15px;display:block;margin-top:2px}
+
+.admin-actions{
+  display:flex;gap:6px;flex-wrap:wrap;
+  padding-top:12px;border-top:1px solid rgba(255,255,255,.08);
+}
+.admin-btn{
+  padding:8px 14px;border-radius:var(--radius-sm);border:none;
+  font-weight:600;font-size:12px;
+  display:flex;align-items:center;gap:5px;
+  transition:all .25s var(--ease);
+}
+.admin-btn svg{width:14px;height:14px}
+.admin-btn.approve{background:rgba(16,185,129,.15);color:#34D399;border:1px solid rgba(16,185,129,.3)}
+.admin-btn.approve:hover{background:#10B981;color:#fff}
+.admin-btn.edit{background:rgba(59,130,246,.15);color:#60A5FA;border:1px solid rgba(59,130,246,.3)}
+.admin-btn.edit:hover{background:#3B82F6;color:#fff}
+.admin-btn.delete{background:rgba(239,68,68,.15);color:#F87171;border:1px solid rgba(239,68,68,.3)}
+.admin-btn.delete:hover{background:#EF4444;color:#fff}
+.admin-btn.unapprove{background:rgba(245,158,11,.15);color:#FBBF24;border:1px solid rgba(245,158,11,.3)}
+.admin-btn.unapprove:hover{background:#F59E0B;color:#fff}
+.admin-btn.logout{background:rgba(201,169,97,.15);color:var(--gold);border:1px solid rgba(201,169,97,.3);margin-inline-start:auto}
+.admin-btn.logout:hover{background:var(--gold);color:var(--navy)}
+
+/* ============ TENANT REQUESTS ============ */
+.tenant-requests{
+  margin-top:12px;padding:12px;
+  background:rgba(201,169,97,.05);
+  border:1px solid rgba(201,169,97,.15);
+  border-radius:var(--radius-md);
+}
+.tr-head{
+  display:flex;align-items:center;gap:7px;margin-bottom:10px;
+  color:var(--gold);font-weight:700;font-size:13px;
+}
+.tr-head svg{width:15px;height:15px}
+.tr-list{display:flex;flex-direction:column;gap:8px}
+.tr-item{
+  background:rgba(10,22,40,.5);
+  border-radius:var(--radius-sm);padding:11px;
+  border:1px solid rgba(255,255,255,.06);
+}
+.tr-item-head{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  margin-bottom:7px;flex-wrap:wrap;
+}
+.tr-item-head strong{color:var(--cream);font-size:13px}
+.tr-item-head .date{font-size:10px;color:rgba(250,247,240,.5)}
+.tr-item-details{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:5px;font-size:11px;color:rgba(250,247,240,.7);margin-bottom:9px;
+}
+.tr-item-details .field{
+  padding:5px 8px;background:rgba(0,0,0,.2);border-radius:5px;
+}
+.tr-item-details .field strong{color:var(--gold);display:block;font-size:9px;margin-bottom:2px;letter-spacing:.05em;text-transform:uppercase}
+.tr-item-notes{
+  font-size:11px;color:rgba(250,247,240,.6);
+  font-style:italic;padding:7px;background:rgba(0,0,0,.15);
+  border-radius:5px;margin-bottom:9px;
+}
+.tr-actions{display:flex;gap:5px;flex-wrap:wrap}
+.tr-btn{
+  flex:1;min-width:70px;padding:6px 9px;border-radius:5px;border:none;
+  font-weight:600;font-size:11px;
+  transition:all .2s var(--ease);
+  display:flex;align-items:center;justify-content:center;gap:3px;
+}
+.tr-btn.approve{background:rgba(16,185,129,.2);color:#34D399}
+.tr-btn.approve:hover{background:#10B981;color:#fff}
+.tr-btn.reject{background:rgba(239,68,68,.2);color:#F87171}
+.tr-btn.reject:hover{background:#EF4444;color:#fff}
+.tr-btn.confirm{background:rgba(10,22,40,.6);color:var(--gold)}
+.tr-btn.confirm:hover{background:var(--gold);color:var(--navy)}
+.tr-btn.call{background:rgba(37,211,102,.15);color:#4ADE80}
+.tr-btn.call:hover{background:#10B981;color:#fff}
+.tr-no-req{
+  text-align:center;padding:8px;color:rgba(250,247,240,.4);
+  font-size:11px;font-style:italic;
+}
+
+/* ============ MODAL ============ */
+.modal-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(10,22,40,.75);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:grid;place-items:center;
+  padding:20px;
+  opacity:0;visibility:hidden;
+  transition:all .3s var(--ease);
+  overflow-y:auto;
+}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal{
+  background:var(--white);
+  border-radius:var(--radius-xl);
+  max-width:560px;width:100%;
+  max-height:90vh;overflow-y:auto;
+  transform:scale(.95);
+  transition:transform .3s var(--ease);
+  box-shadow:var(--shadow-lg);
+  margin:auto;
+}
+.modal.modal-wide{max-width:760px}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-head{
+  padding:24px 24px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  position:sticky;top:0;background:var(--white);z-index:2;
+  border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+}
+.modal-head h3{font-size:20px;font-weight:800;color:var(--navy);line-height:1.3}
+body[data-lang="en"] .modal-head h3, body[data-lang="fr"] .modal-head h3{font-family:var(--font-display)}
+.modal-head p{font-size:12px;color:var(--text-soft);margin-top:3px}
+.modal-close{
+  width:34px;height:34px;border:none;border-radius:50%;
+  background:var(--cream-2);
+  display:grid;place-items:center;flex-shrink:0;
+  transition:all .25s var(--ease);
+}
+.modal-close:hover{background:var(--danger);color:#fff;transform:rotate(90deg)}
+.modal-close svg{width:16px;height:16px}
+.modal-body{padding:22px 24px 24px}
+.form-grid{display:grid;gap:14px}
+.form-grid.two-col{grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.three-col{grid-template-columns:1fr 1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{
+  font-size:12px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;gap:5px;
+}
+.form-group label .req{color:var(--danger)}
+.form-group label .auto-tag{
+  font-size:9px;font-weight:700;
+  padding:2px 5px;border-radius:3px;
+  background:var(--gold-soft);color:var(--navy);
+  letter-spacing:.05em;text-transform:uppercase;
+}
+.form-group input, .form-group select, .form-group textarea{
+  padding:12px 14px;
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-md);
+  font-size:14px;color:var(--text);
+  background:var(--white);
+  transition:all .25s var(--ease);
+  outline:none;width:100%;font-family:inherit;
+}
+.form-group textarea{resize:vertical;min-height:75px}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus{
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px var(--gold-soft);
+}
+.form-group input.auto-field{
+  background:linear-gradient(135deg,var(--cream) 0%,var(--cream-2) 100%);
+  border-style:dashed;
+}
+.form-group .hint{font-size:10px;color:var(--text-soft);padding:0 4px}
+.form-footer{
+  display:flex;gap:8px;margin-top:20px;
+  padding-top:20px;border-top:1px solid var(--border);
+}
+.btn-secondary{
+  flex:1;padding:12px;border:1.5px solid var(--border);
+  background:var(--white);color:var(--text);
+  border-radius:var(--radius-md);font-weight:600;font-size:13px;
+  transition:all .25s var(--ease);
+}
+.btn-secondary:hover{background:var(--cream-2)}
+.btn-primary{
+  flex:1.3;padding:12px;border:none;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  color:var(--gold);
+  border-radius:var(--radius-md);font-weight:700;font-size:13px;
+  transition:all .25s var(--ease);
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn-primary:hover{background:linear-gradient(135deg,var(--gold) 0%,var(--gold-2) 100%);color:var(--navy);box-shadow:var(--shadow-gold)}
+.btn-primary svg{width:16px;height:16px}
+
+.rate-hint{
+  padding:9px 12px;background:var(--gold-soft);
+  border-radius:var(--radius-sm);
+  font-size:11px;color:var(--navy);
+  display:flex;align-items:center;gap:7px;margin-top:-2px;
+}
+.rate-hint svg{width:14px;height:14px;color:var(--gold);flex-shrink:0}
+
+/* ============ MULTI IMAGE UPLOAD ============ */
+.image-upload-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  gap:10px;
+}
+.image-slot{
+  position:relative;aspect-ratio:1/1;
+  background:var(--cream);
+  border:2px dashed var(--border);
+  border-radius:var(--radius-md);
+  display:grid;place-items:center;
+  overflow:hidden;
+  transition:all .25s var(--ease);
+}
+.image-slot.has-image{border-style:solid;border-color:var(--gold)}
+.image-slot:hover{border-color:var(--gold);background:var(--cream-2)}
+.image-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.image-slot .placeholder{text-align:center;padding:8px;color:var(--text-soft)}
+.image-slot .placeholder svg{width:24px;height:24px;color:var(--gold);margin-bottom:2px}
+.image-slot .placeholder span{font-size:9px;font-weight:600;display:block}
+.image-slot input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.image-slot .cover-badge{
+  position:absolute;top:5px;inset-inline-start:5px;z-index:2;
+  background:var(--gold);color:var(--navy);font-size:8px;font-weight:800;
+  padding:2px 6px;border-radius:5px;letter-spacing:.03em;text-transform:uppercase;
+}
+.image-remove-sm{
+  position:absolute;top:5px;inset-inline-end:5px;z-index:2;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(239,68,68,.95);color:#fff;border:none;
+  display:grid;place-items:center;transition:all .2s var(--ease);
+}
+.image-remove-sm:hover{background:var(--danger);transform:scale(1.1)}
+.image-remove-sm svg{width:11px;height:11px}
+.image-upload-hint{font-size:10px;color:var(--text-soft);padding:0 4px}
+
+/* ============ PASSWORD MODAL ============ */
+.password-modal .modal{max-width:420px}
+.password-hint{
+  padding:12px;background:var(--gold-soft);
+  border-radius:var(--radius-sm);
+  font-size:12px;color:var(--navy);
+  display:flex;align-items:center;gap:8px;margin-bottom:14px;
+}
+.password-hint svg{width:16px;height:16px;color:var(--gold);flex-shrink:0}
+.password-input-wrap{position:relative}
+.password-input-wrap input{padding-inline-end:44px !important}
+.password-toggle{
+  position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);
+  background:transparent;border:none;color:var(--text-soft);
+  display:grid;place-items:center;
+}
+.password-toggle svg{width:18px;height:18px}
+.password-error{
+  padding:10px;background:rgba(239,68,68,.1);color:var(--danger);
+  border-radius:var(--radius-sm);font-size:12px;font-weight:600;
+  display:none;align-items:center;gap:6px;
+}
+.password-error.show{display:flex}
+.password-error svg{width:16px;height:16px;flex-shrink:0}
+
+/* ============ TOAST ============ */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--navy);color:var(--cream);
+  padding:12px 20px;border-radius:var(--radius-md);
+  font-weight:600;font-size:13px;
+  box-shadow:var(--shadow-lg);
+  display:flex;align-items:center;gap:9px;
+  opacity:0;z-index:2000;
+  transition:all .35s var(--ease);
+  max-width:90%;
+  border:1px solid rgba(201,169,97,.3);
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast svg{width:18px;height:18px;color:var(--gold);flex-shrink:0}
+.toast.success{border-color:var(--success)}
+.toast.success svg{color:var(--success)}
+.toast.error{border-color:var(--danger)}
+.toast.error svg{color:var(--danger)}
+
+/* ============ PROPERTY DETAIL MODAL ============ */
+.detail-gallery{position:relative;background:var(--navy-2)}
+.detail-gallery-main{
+  position:relative;aspect-ratio:16/10;overflow:hidden;
+  background:linear-gradient(135deg,var(--navy-2),var(--navy));
+}
+.detail-gallery-main img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.detail-gallery-main .icon-house{position:absolute;inset:0;display:grid;place-items:center;color:rgba(201,169,97,.35)}
+.detail-gallery-main .icon-house svg{width:64px;height:64px}
+.gallery-nav{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:3;
+  width:38px;height:38px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.9);color:var(--navy);
+  display:grid;place-items:center;box-shadow:var(--shadow-md);
+}
+.gallery-nav.prev{inset-inline-start:10px}
+.gallery-nav.next{inset-inline-end:10px}
+.gallery-nav svg{width:18px;height:18px}
+.gallery-dots{
+  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;z-index:3;
+}
+.gallery-dots .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5);transition:all .2s}
+.gallery-dots .dot.active{background:var(--gold);width:18px;border-radius:4px}
+.detail-thumbs{display:flex;gap:8px;padding:10px;background:var(--navy);overflow-x:auto}
+.detail-thumbs img{
+  width:56px;height:56px;border-radius:8px;object-fit:cover;flex-shrink:0;
+  opacity:.55;border:2px solid transparent;transition:all .2s;cursor:pointer;
+}
+.detail-thumbs img.active{opacity:1;border-color:var(--gold)}
+.detail-body{padding:22px 24px}
+.detail-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+.detail-title-row h3{font-size:22px;font-weight:800;color:var(--navy)}
+body[data-lang="en"] .detail-title-row h3, body[data-lang="fr"] .detail-title-row h3{font-family:var(--font-display)}
+.detail-region{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-soft);margin-bottom:14px}
+.detail-region svg{width:15px;height:15px;color:var(--gold)}
+.detail-specs-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));
+  gap:10px;margin-bottom:18px;
+}
+.detail-spec{
+  background:var(--cream);border-radius:var(--radius-md);
+  padding:12px 10px;text-align:center;
+}
+.detail-spec svg{width:20px;height:20px;color:var(--gold);margin-bottom:4px}
+.detail-spec strong{display:block;font-size:15px;color:var(--navy);font-weight:800}
+.detail-spec span{font-size:10px;color:var(--text-soft);font-weight:600}
+.detail-section{margin-bottom:18px}
+.detail-section h5{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:.03em}
+.detail-desc{font-size:14px;color:var(--text);line-height:1.8}
+.detail-price-row{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  padding:14px;background:var(--cream);border-radius:var(--radius-md);margin-bottom:16px;
+}
+.detail-views{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-soft)}
+.detail-views svg{width:14px;height:14px}
+
+/* ============ FOOTER ============ */
+.footer{
+  background:var(--navy);color:rgba(250,247,240,.75);
+  padding:44px 20px 24px;
+  border-top:1px solid rgba(201,169,97,.15);
+}
+.footer-inner{
+  max-width:1400px;margin:0 auto;
+  display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:28px;
+}
+.footer-col h5{
+  color:var(--gold);font-size:13px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;
+  margin-bottom:12px;
+}
+.footer-col p{font-size:12px;line-height:1.8;margin-bottom:6px}
+.footer-col a{color:rgba(250,247,240,.75);transition:color .25s;font-size:12px}
+.footer-col a:hover{color:var(--gold)}
+.footer-contact-item{
+  display:flex;align-items:center;gap:9px;margin-bottom:10px;
+}
+.footer-contact-item .ic{
+  width:30px;height:30px;border-radius:8px;
+  background:rgba(201,169,97,.15);color:var(--gold);
+  display:grid;place-items:center;flex-shrink:0;
+}
+.footer-contact-item .ic svg{width:14px;height:14px}
+.footer-bottom{
+  max-width:1400px;margin:24px auto 0;
+  padding-top:18px;border-top:1px solid rgba(255,255,255,.06);
+  text-align:center;font-size:11px;color:rgba(250,247,240,.5);
+}
+.footer-bottom strong{color:var(--gold)}
+@media (max-width:720px){
+  .footer-inner{grid-template-columns:1fr;gap:20px}
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:640px){
+  .section{padding:40px 16px}
+  .form-grid.two-col, .form-grid.three-col{grid-template-columns:1fr}
+  .modal-head,.modal-body{padding:18px}
+  .admin-panel{padding:44px 16px}
+  .nav-inner{padding:12px 14px}
+  .logo-mark{width:38px;height:38px}
+  .logo-text h1{font-size:16px}
+  .contact-strip{padding:0 16px}
+  .contact-inner{padding:12px;gap:10px}
+  .contact-item{font-size:12px}
+  .contact-label{display:none}
+  .hero{padding:32px 16px 44px}
+  .hero-stats{gap:8px}
+  .hero-stat{padding:12px 8px}
+}
+
+/* ============ MAP VIEW & FAVORITES ============ */
+.view-toggle{
+  display:flex;gap:8px;margin-bottom:16px;align-items:center;
+}
+.view-btn{
+  padding:9px 16px;border-radius:var(--radius-md);border:1.5px solid var(--border);
+  background:var(--white);color:var(--text-soft);
+  font-weight:600;font-size:13px;
+  transition:all .25s var(--ease);
+  display:flex;align-items:center;gap:6px;
+}
+.view-btn.active{
+  background:var(--navy);color:var(--gold);border-color:var(--navy);
+}
+.view-btn:hover:not(.active){background:var(--cream-2)}
+.view-btn svg{width:16px;height:16px}
+
+#map-container{
+  position:relative;width:100%;height:600px;
+  border-radius:var(--radius-lg);overflow:hidden;
+  background:linear-gradient(135deg,var(--navy-2),var(--navy));
+  margin-bottom:24px;box-shadow:var(--shadow-md);
+}
+#map-svg{width:100%;height:100%;display:block}
+
+.map-controls{
+  position:absolute;top:12px;inset-inline-start:12px;z-index:10;
+  display:flex;flex-direction:column;gap:8px;
+}
+.map-filter-btn{
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:var(--white);color:var(--navy);
+  display:grid;place-items:center;box-shadow:var(--shadow-md);
+  transition:all .25s;cursor:pointer;
+}
+.map-filter-btn:hover{background:var(--gold);color:var(--navy);transform:scale(1.05)}
+.map-filter-btn svg{width:18px;height:18px}
+
+.map-property-marker{
+  cursor:pointer;transition:all .2s;
+}
+.map-property-marker circle{
+  stroke:var(--gold);stroke-width:2;fill:var(--navy);
+}
+.map-property-marker:hover circle{r:14;fill:var(--gold)}
+.map-property-marker text{
+  font-size:11px;font-weight:700;text-anchor:middle;fill:#fff;
+  pointer-events:none;
+}
+
+.fav-btn{
+  position:absolute;top:12px;inset-inline-end:12px;z-index:5;
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.95);color:var(--navy);
+  display:grid;place-items:center;
+  transition:all .25s;cursor:pointer;box-shadow:var(--shadow-md);
+}
+.fav-btn:hover{background:var(--gold);transform:scale(1.15)}
+.fav-btn.active{color:var(--danger)}
+.fav-btn svg{width:18px;height:18px}
+
+.fav-count{
+  position:absolute;bottom:12px;inset-inline-end:12px;
+  background:rgba(10,22,40,.85);color:var(--gold);
+  padding:5px 10px;border-radius:999px;
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;gap:4px;
+}
+.fav-count svg{width:13px;height:13px}
+
+.fav-list{
+  position:fixed;bottom:20px;left:20px;z-index:900;
+  background:var(--white);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);padding:12px;
+  max-width:300px;max-height:200px;overflow-y:auto;
+  display:none;
+  border:1px solid var(--border);
+}
+.fav-list.show{display:block}
+.fav-list h5{
+  font-size:12px;font-weight:700;color:var(--navy);
+  margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.fav-list-item{
+  padding:6px 0;font-size:11px;color:var(--text);
+  display:flex;justify-content:space-between;align-items:center;
+  gap:6px;
+}
+.fav-list-item:hover{color:var(--gold)}
+.fav-list-item .remove{
+  background:none;border:none;color:var(--danger);
+  font-size:11px;font-weight:700;cursor:pointer;
+  padding:0;
+}
+
+/* ============ SHARE MODAL OVERLAY ============ */
+.share-modal-overlay{
+  position:fixed;top:0;inset:0;background:rgba(0,0,0,.4);
+  z-index:999;display:flex;align-items:flex-end;
+  opacity:0;visibility:hidden;transition:all .3s;
+  pointer-events:none;
+}
+.share-modal-overlay.open{
+  opacity:1;visibility:visible;pointer-events:auto;
+}
+.share-modal-content{
+  background:var(--white);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  width:100%;max-width:500px;padding:24px;max-height:80vh;overflow-y:auto;
+  animation:slideUp .3s var(--ease);
+}
+@keyframes slideUp{from{transform:translateY(100%)} to{transform:translateY(0)}}
+.share-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.share-preview{background:var(--cream);border-radius:var(--radius-md);padding:12px;margin-bottom:16px;display:flex;gap:12px}
+.share-preview-img{width:80px;height:80px;border-radius:var(--radius-sm);background:var(--navy-2);display:grid;place-items:center;flex-shrink:0;overflow:hidden}
+.share-preview-img img{width:100%;height:100%;object-fit:cover}
+.share-preview-text{flex:1;font-size:11px;color:var(--text-soft)}
+.share-preview-text strong{display:block;color:var(--navy);font-size:12px;margin-bottom:4px}
+.share-actions{display:grid;gap:8px}
+.share-action-btn{padding:12px 16px;border-radius:var(--radius-md);border:1px solid var(--border);background:var(--white);color:var(--text);font-weight:600;font-size:13px;transition:all .25s;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%}
+.share-action-btn:hover{background:var(--cream);border-color:var(--navy)}
+.share-action-btn svg{width:16px;height:16px}
+
+@media (max-width:640px){
+  #map-container{height:400px}
+  .view-toggle{margin-bottom:12px}
+  .view-btn{padding:8px 12px;font-size:12px}
+  .fav-list{left:10px;max-width:calc(100vw - 20px)}
+  .share-modal-content{max-height:calc(100vh - 100px)}
+}
+</style>
+</head>
+<body data-lang="ar">
+
+<!-- ============ NAVIGATION ============ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="logo" onclick="location.reload()" style="cursor:pointer" title="MaisonPRO">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+      </div>
+      <div class="logo-text">
+        <h1>MaisonPRO</h1>
+        <p data-i18n="tagline">PREMIUM · DJIBOUTI</p>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <div class="lang-wrap">
+        <button class="lang-toggle" id="lang-toggle" aria-label="Language">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        </button>
+        <div class="lang-menu" id="lang-menu">
+          <button class="lang-option active" data-lang="ar">
+            <span>العربية</span>
+            <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="lang-option" data-lang="en">
+            <span>English</span>
+            <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="lang-option" data-lang="fr">
+            <span>Français</span>
+            <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="notif-wrap">
+        <button class="notif-btn" id="notif-toggle" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+        </button>
+        <div class="notif-panel" id="notif-panel">
+          <div class="notif-head">
+            <h4 data-i18n="notifTitle">الإشعارات</h4>
+            <button class="notif-clear" onclick="clearNotifications()" data-i18n="notifClear">مسح الكل</button>
+          </div>
+          <div class="notif-list" id="notif-list"></div>
+        </div>
+      </div>
+
+      <button class="btn-nav btn-add" onclick="openAddModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="btn-label" data-i18n="addProperty">أضف مسكنك</span>
+      </button>
+      <button class="btn-nav btn-admin" onclick="openPasswordModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <span class="btn-label" data-i18n="adminBtn">الإدارة</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      <span data-i18n="heroBadge">منصة العقارات الأولى في جيبوتي</span>
+    </div>
+    <h2>
+      <span data-i18n="heroTitle1">اكتشف منزل أحلامك</span>
+      <br><span class="accent" data-i18n="heroTitle2">في جيبوتي</span>
+    </h2>
+    <p data-i18n="heroDesc">أفخم الشقق والفيلات للإيجار في أرقى الأحياء — Héron، Haramous، Gabode، Salines Ouest وغيرها</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="num" id="stat-listed">0</span><span class="lbl" data-i18n="statListed">مسكن متاح</span></div>
+      <div class="hero-stat"><span class="num" id="stat-regions">12+</span><span class="lbl" data-i18n="statRegions">حي مغطى</span></div>
+      <div class="hero-stat"><span class="num" id="stat-requests">0</span><span class="lbl" data-i18n="statRequests">طلب نشط</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ CONTACT STRIP ============ -->
+<div class="contact-strip">
+  <div class="contact-inner">
+    <a href="https://wa.me/25377690223" target="_blank" rel="noopener" class="contact-item">
+      <span class="ic" style="background:rgba(37,211,102,.12);color:#25D366">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.693.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </span>
+      <span>
+        <span class="contact-label" data-i18n="contactWhatsapp">واتساب</span>
+        <span class="contact-value" data-i18n="contactCta">تواصل معنا مباشرة</span>
+      </span>
+    </a>
+  </div>
+</div>
+
+<!-- ============ PUBLIC LISTING ============ -->
+<section class="section" id="public-section">
+  <div class="section-head">
+    <div class="title-wrap">
+      <div class="divider"></div>
+      <h3 data-i18n="publicTitle">العقارات المتاحة للإيجار</h3>
+      <p data-i18n="publicDesc">استعرض مجموعتنا المختارة بعناية من أفخم المساكن في جيبوتي</p>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-chip active" data-filter="all" data-i18n="filterAll">الكل</button>
+    <button class="filter-chip" data-filter="villa" data-i18n="typeVilla">فيلا</button>
+    <button class="filter-chip" data-filter="apartment" data-i18n="typeApartment">شقة</button>
+    <button class="filter-chip" data-filter="studio" data-i18n="typeStudio">استوديو</button>
+    <button class="filter-chip" data-filter="house" data-i18n="typeHouse">منزل</button>
+    <input type="text" class="filter-search" id="public-search" data-i18n-placeholder="searchPlaceholder" placeholder="ابحث بالاسم أو المنطقة..." oninput="renderPublicListing()">
+  </div>
+
+  <!-- View Toggle -->
+  <div class="view-toggle">
+    <button class="view-btn active" data-view="list" onclick="switchView('list')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      <span data-i18n="viewList">قائمة</span>
+    </button>
+    <button class="view-btn" data-view="map" onclick="switchView('map')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span data-i18n="viewMap">مناطق</span>
+    </button>
+    <div style="flex:1"></div>
+    <div class="fav-count">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      0
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div id="list-view" class="list-view-container">
+    <div class="properties-grid" id="public-grid"></div>
+  </div>
+
+  <!-- Map View (Districts) -->
+  <div id="map-view" class="map-view-container" style="display:none">
+    <div id="districts-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
+  </div>
+</section>
+
+<!-- ============ ADMIN PANEL ============ -->
+<section class="admin-panel scroll-target" id="admin-panel">
+  <div class="admin-inner">
+    <div class="admin-head">
+      <div class="title-wrap">
+        <div class="divider"></div>
+        <h3 data-i18n="adminTitle">لوحة تحكم الإدارة</h3>
+        <p data-i18n="adminDesc">إدارة العقارات والموافقة عليها ومتابعة طلبات المستأجرين</p>
+      </div>
+    </div>
+
+    <div id="admin-content"></div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h5 data-i18n="footerAbout">عن MaisonPRO</h5>
+      <p data-i18n="footerDesc">المنصة العقارية الرائدة في جيبوتي، نقدم أفضل الشقق والفيلات للإيجار في أرقى الأحياء بمعايير احترافية عالمية.</p>
+    </div>
+    <div class="footer-col">
+      <h5 data-i18n="footerContact">تواصل معنا</h5>
+      <div class="footer-contact-item">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></span>
+        <a href="tel:+25377690223" dir="ltr">+253 77 690 223</a>
+      </div>
+      <div class="footer-contact-item">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        <a href="mailto:work.inc119@gmail.com">work.inc119@gmail.com</a>
+      </div>
+      <div class="footer-contact-item">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span data-i18n="footerLocation">جيبوتي — جميع الأحياء</span>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5 data-i18n="footerHours">ساعات العمل</h5>
+      <p data-i18n="footerHoursText">متاحون على مدار الساعة للإجابة على استفساراتكم ودعمكم في العثور على منزل أحلامكم.</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 <strong>MaisonPRO</strong> — <span data-i18n="footerText">منصة العقارات الفاخرة في جيبوتي. جميع الحقوق محفوظة.</span></p>
+  </div>
+</footer>
+
+<!-- ============ PASSWORD MODAL ============ -->
+<div class="modal-overlay password-modal" id="password-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 data-i18n="passwordTitle">🔐 دخول الإدارة</h3>
+        <p data-i18n="passwordDesc">أدخل كلمة المرور للوصول إلى لوحة التحكم</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('password-modal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form class="modal-body" id="password-form">
+      <div class="password-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span data-i18n="passwordHint">كلمة المرور الافتراضية: <strong>admin2026</strong></span>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label><span data-i18n="labelPassword">كلمة المرور</span> <span class="req">*</span></label>
+          <div class="password-input-wrap">
+            <input type="password" id="pw-input" required autocomplete="current-password" data-i18n-placeholder="phPassword" placeholder="أدخل كلمة المرور">
+            <button type="button" class="password-toggle" onclick="togglePassword()">
+              <svg id="pw-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="password-error" id="pw-error">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <span data-i18n="pwError">كلمة المرور غير صحيحة</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('password-modal')" data-i18n="btnCancel">إلغاء</button>
+        <button type="submit" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span data-i18n="btnUnlock">دخول</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ ADD / EDIT PROPERTY MODAL ============ -->
+<div class="modal-overlay" id="property-modal">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <div>
+        <h3 id="property-modal-title" data-i18n="addTitle">إضافة عقار جديد</h3>
+        <p id="property-modal-desc" data-i18n="addDesc">أدخل بيانات العقار وسنراجعه في أقرب وقت</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('property-modal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form class="modal-body" id="property-form">
+      <input type="hidden" id="property-id">
+      
+      <!-- Language tabs for edit mode (hidden during add) -->
+      <div id="edit-lang-tabs" style="display:none;margin-bottom:16px;display:flex;gap:6px;border-bottom:1px solid var(--border);padding-bottom:10px">
+        <button type="button" class="lang-tab-btn active" data-lang="ar" onclick="switchEditLang('ar')">العربية</button>
+        <button type="button" class="lang-tab-btn" data-lang="en" onclick="switchEditLang('en')">English</button>
+        <button type="button" class="lang-tab-btn" data-lang="fr" onclick="switchEditLang('fr')">Français</button>
+      </div>
+      <style>
+        .lang-tab-btn{padding:8px 14px;border:none;border-radius:var(--radius-sm);background:var(--cream);color:var(--text-soft);font-weight:600;font-size:12px;transition:all .2s;cursor:pointer}
+        .lang-tab-btn.active{background:var(--navy);color:var(--gold)}
+        .lang-tab-btn:hover:not(.active){background:var(--cream-2)}
+      </style>
+      
+      <div class="form-grid">
+
+        <!-- MULTI IMAGE UPLOAD -->
+        <div class="form-group">
+          <label>
+            <span data-i18n="labelImages">صور العقار (حتى 5 صور)</span>
+            <span class="auto-tag" data-i18n="optional">اختياري</span>
+          </label>
+          <div class="image-upload-grid" id="image-upload-grid"></div>
+          <span class="image-upload-hint" data-i18n="imgHint">JPG, PNG — الحد الأقصى 5MB للصورة، أول صورة هي الغلاف</span>
+        </div>
+
+        <div class="form-group">
+          <label><span data-i18n="labelName">اسم العقار</span> <span class="auto-tag" id="name-lang-indicator">AR</span> <span class="req">*</span></label>
+          <input type="text" id="p-name" required data-i18n-placeholder="phName" placeholder="مثال: فيلا الياسمين الفاخرة">
+          <span class="hint" id="name-langs-hint" style="font-size:10px;color:#5A6B87;margin-top:4px;display:none">يمكن إضافة لغات أخرى عند التعديل</span>
+        </div>
+
+        <div class="form-group">
+          <label><span data-i18n="labelRegion">المنطقة / الحي</span> <span class="req">*</span></label>
+          <input type="text" id="p-region" required list="regions-list" data-i18n-placeholder="phRegion" placeholder="مثال: Héron">
+          <datalist id="regions-list">
+            <option value="Héron"></option>
+            <option value="Haramous"></option>
+            <option value="Gabode"></option>
+            <option value="Salines Ouest"></option>
+            <option value="Plateau du Serpent"></option>
+            <option value="Einguela"></option>
+            <option value="Balbala"></option>
+            <option value="Arhiba"></option>
+            <option value="Djebel Ali"></option>
+          </datalist>
+          <span class="hint" data-i18n="hintRegion">يمكنك كتابة أي اسم حي يدوياً</span>
+        </div>
+
+        <div class="form-grid three-col">
+          <div class="form-group">
+            <label><span data-i18n="labelType">نوع العقار</span> <span class="req">*</span></label>
+            <select id="p-type" required>
+              <option value="" data-i18n="selectType">اختر النوع</option>
+              <option value="apartment" data-i18n="typeApartment">شقة</option>
+              <option value="villa" data-i18n="typeVilla">فيلا</option>
+              <option value="studio" data-i18n="typeStudio">استوديو</option>
+              <option value="house" data-i18n="typeHouse">منزل</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><span data-i18n="labelRooms">عدد الغرف</span> <span class="req">*</span></label>
+            <input type="number" id="p-rooms" required min="0" max="20" value="2">
+          </div>
+          <div class="form-group">
+            <label><span data-i18n="labelBaths">عدد الحمامات</span></label>
+            <input type="number" id="p-baths" min="0" max="20" value="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><span data-i18n="labelArea">المساحة (م²)</span></label>
+          <input type="number" id="p-area" min="0" step="1" data-i18n-placeholder="phArea" placeholder="مثال: 180">
+        </div>
+
+        <div class="form-group">
+          <label><span data-i18n="labelAmenities">المرافق المتوفرة</span></label>
+          <div class="amenity-picker" id="amenity-picker"></div>
+        </div>
+
+        <div class="form-group">
+          <label><span data-i18n="labelDescription">وصف العقار</span> <span class="auto-tag" id="desc-lang-indicator">AR</span></label>
+          <textarea id="p-description" rows="4" data-i18n-placeholder="phDescription" placeholder="اكتب وصفاً يوضح مميزات العقار..."></textarea>
+          <span class="hint" id="desc-langs-hint" style="font-size:10px;color:#5A6B87;margin-top:4px;display:none">يمكن إضافة لغات أخرى عند التعديل</span>
+        </div>
+
+        <div class="form-grid two-col">
+          <div class="form-group">
+            <label>
+              <span data-i18n="labelPriceDJF">السعر بالفرنك الجيبوتي</span>
+              <span class="req">*</span>
+            </label>
+            <input type="number" id="p-price-djf" required min="0" step="1000" placeholder="500000" oninput="autoConvertDJF()">
+            <span class="hint">DJF</span>
+          </div>
+          <div class="form-group">
+            <label>
+              <span data-i18n="labelPriceUSD">السعر بالدولار</span>
+              <span class="auto-tag" data-i18n="autoLabel">تلقائي</span>
+            </label>
+            <input type="number" id="p-price-usd" class="auto-field" min="0" step="1" placeholder="2814" oninput="autoConvertUSD()">
+            <span class="hint">USD $</span>
+          </div>
+        </div>
+
+        <div class="rate-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span data-i18n="rateInfo">سعر الصرف الرسمي: 1 USD = 177.721 DJF — يتم التحويل تلقائياً</span>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('property-modal')" data-i18n="btnCancel">إلغاء</button>
+        <button type="submit" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>
+          <span data-i18n="btnSubmit">إرسال للمراجعة</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ PROPERTY DETAIL MODAL ============ -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <div>
+        <h3 data-i18n="detailTitle">تفاصيل العقار</h3>
+      </div>
+      <button class="modal-close" onclick="closeModal('detail-modal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- ============ TENANT REQUEST MODAL ============ -->
+<div class="modal-overlay" id="tenant-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 data-i18n="tenantTitle">طلب استئجار المسكن</h3>
+        <p id="tenant-modal-property" data-i18n="tenantDesc">أدخل بياناتك لإرسال طلب استئجار العقار</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('tenant-modal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form class="modal-body" id="tenant-form">
+      <input type="hidden" id="tenant-property-id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label><span data-i18n="labelFullName">الاسم الكامل</span> <span class="req">*</span></label>
+          <input type="text" id="t-name" required data-i18n-placeholder="phFullName" placeholder="محمد علي أحمد">
+        </div>
+
+        <div class="form-group">
+          <label><span data-i18n="labelPhone">رقم الهاتف / واتساب</span> <span class="req">*</span></label>
+          <input type="tel" id="t-phone" required data-i18n-placeholder="phPhone" placeholder="+253 77 123 456">
+        </div>
+
+        <div class="form-grid two-col">
+          <div class="form-group">
+            <label><span data-i18n="labelCheckIn">تاريخ الدخول المتوقع</span> <span class="req">*</span></label>
+            <input type="date" id="t-checkin" required>
+          </div>
+          <div class="form-group">
+            <label><span data-i18n="labelGuests">عدد الأفراد</span> <span class="req">*</span></label>
+            <input type="number" id="t-guests" required min="1" max="50" value="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><span data-i18n="labelBudget">الميزانية المحددة</span> <span class="req">*</span></label>
+          <input type="text" id="t-budget" required data-i18n-placeholder="phBudget" placeholder="مثال: 500,000 DJF أو 2,800 USD">
+          <span class="hint" data-i18n="hintBudget">اذكر القدرة المالية المتاحة</span>
+        </div>
+
+        <div class="form-group">
+          <label><span data-i18n="labelNotes">ملاحظات أو استفسارات خاصة</span></label>
+          <textarea id="t-notes" rows="3" data-i18n-placeholder="phNotes" placeholder="مثال: هل يوجد تكييف T3؟ هل تشمل الخدمات..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('tenant-modal')" data-i18n="btnCancel">إلغاء</button>
+        <button type="submit" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          <span data-i18n="btnSendRequest">إرسال الطلب</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+  <span id="toast-msg">تم بنجاح</span>
+</div>
+
+<script>
+/* ============================================================
+   MaisonPRO v4.0 — Premium Real Estate Platform for Djibouti
+   ============================================================ */
+
+const DJF_PER_USD = 177.721;
+const ADMIN_PASSWORD = "admin2026"; // Change this to your password
+const MAX_IMAGES = 5;
+
+/* ---------- AMENITIES DEFINITION ---------- */
+const AMENITIES = [
+  {id:"ac", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="6" rx="1"/><path d="M6 16v2M10 16v3M14 16v2M18 16v3"/></svg>', labelKey:"amenityAC"},
+  {id:"pool", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0"/><path d="M2 21c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0"/><path d="M5 17V5a2 2 0 012-2h10a2 2 0 012 2v12"/></svg>', labelKey:"amenityPool"},
+  {id:"security", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>', labelKey:"amenitySecurity"},
+  {id:"parking", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 010 6H9"/></svg>', labelKey:"amenityParking"},
+  {id:"wifi", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1"/></svg>', labelKey:"amenityWifi"},
+  {id:"garden", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12c0-4-3-7-7-7 0 4 3 7 7 7zm0 0c0-4 3-7 7-7 0 4-3 7-7 7z"/></svg>', labelKey:"amenityGarden"},
+  {id:"furnished", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v11M21 7v11M3 12h18M5 12V9a2 2 0 012-2h10a2 2 0 012 2v3"/></svg>', labelKey:"amenityFurnished"},
+  {id:"elevator", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 9l3-3 3 3M9 15l3 3 3-3"/></svg>', labelKey:"amenityElevator"},
+  {id:"balcony", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10l7-7 7 7v11M9 21v-6h6v6"/></svg>', labelKey:"amenityBalcony"},
+  {id:"generator", icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>', labelKey:"amenityGenerator"},
+];
+
+/* ---------- TRANSLATIONS ---------- */
+const i18n = {
+  ar:{
+    tagline:"أفضل منصة · جيبوتي",
+    addProperty:"أضف مسكنك",
+    adminBtn:"الإدارة",
+    heroBadge:"منصة العقارات الأولى في جيبوتي",
+    heroTitle1:"اكتشف منزل أحلامك",
+    heroTitle2:"في جيبوتي",
+    heroDesc:"أفخم الشقق والفيلات للإيجار في أرقى الأحياء — Héron، Haramous، Gabode، Salines Ouest وغيرها",
+    statListed:"مسكن متاح", statRegions:"حي مغطى", statRequests:"طلب نشط",
+    publicTitle:"العقارات المتاحة للإيجار",
+    publicDesc:"استعرض مجموعتنا المختارة بعناية من أفخم المساكن في جيبوتي",
+    filterAll:"الكل",
+    searchPlaceholder:"ابحث بالاسم أو المنطقة...",
+    adminTitle:"لوحة تحكم الإدارة",
+    adminDesc:"إدارة العقارات والموافقة عليها ومتابعة طلبات المستأجرين",
+    adminLockedTitle:"🔒 لوحة الإدارة محمية",
+    adminLockedDesc:"يجب تسجيل الدخول بكلمة المرور للوصول",
+    btnUnlockAdmin:"دخول الإدارة",
+    btnLogout:"تسجيل الخروج",
+    tabAll:"جميع العقارات", tabPending:"بانتظار الموافقة", tabApproved:"المُوافَق عليها",
+    addTitle:"إضافة عقار جديد", addDesc:"أدخل بيانات العقار وسنراجعه في أقرب وقت",
+    editTitle:"تعديل بيانات العقار", editDesc:"عدّل البيانات واحفظ التغييرات",
+    labelName:"اسم العقار", labelRegion:"المنطقة / الحي", labelType:"نوع العقار",
+    labelRooms:"عدد الغرف", labelBaths:"عدد الحمامات", labelArea:"المساحة (م²)",
+    labelAmenities:"المرافق المتوفرة", labelDescription:"وصف العقار",
+    labelPriceDJF:"السعر بالفرنك الجيبوتي", labelPriceUSD:"السعر بالدولار",
+    labelImages:"صور العقار (حتى 5 صور)", optional:"اختياري",
+    imgHint:"JPG, PNG — الحد الأقصى 5MB للصورة، أول صورة هي الغلاف",
+    coverLabel:"غلاف",
+    labelFullName:"الاسم الكامل", labelPhone:"رقم الهاتف / واتساب",
+    labelCheckIn:"تاريخ الدخول المتوقع", labelGuests:"عدد الأفراد",
+    labelBudget:"الميزانية المحددة", labelNotes:"ملاحظات أو استفسارات خاصة",
+    phName:"مثال: فيلا الياسمين الفاخرة", phRegion:"مثال: Héron",
+    phArea:"مثال: 180",
+    phDescription:"اكتب وصفاً يوضح مميزات العقار...",
+    phFullName:"محمد علي أحمد", phPhone:"+253 77 123 456",
+    phBudget:"مثال: 500,000 DJF أو 2,800 USD",
+    phNotes:"مثال: هل يوجد تكييف T3؟ هل تشمل الخدمات...",
+    hintRegion:"يمكنك كتابة أي اسم حي يدوياً",
+    hintBudget:"اذكر القدرة المالية المتاحة",
+    rateInfo:"سعر الصرف الرسمي: 1 USD = 177.721 DJF — يتم التحويل تلقائياً",
+    autoLabel:"تلقائي",
+    selectType:"اختر النوع",
+    typeApartment:"شقة", typeVilla:"فيلا", typeStudio:"استوديو", typeHouse:"منزل",
+    btnCancel:"إلغاء", btnSubmit:"إرسال للمراجعة", btnUpdate:"حفظ التغييرات",
+    btnSendRequest:"إرسال الطلب",
+    tenantTitle:"طلب استئجار المسكن", tenantDesc:"أدخل بياناتك لإرسال طلب استئجار العقار",
+    btnRent:"طلب استئجار المسكن", btnShare:"مشاركة",
+    detailTitle:"تفاصيل العقار",
+    specRooms:"غرف", specBaths:"حمامات", specArea:"م²",
+    statusPending:"قيد الانتظار", statusApproved:"مُوافق عليه", statusRejected:"مرفوض", statusConfirmed:"مؤكد",
+    actApprove:"موافقة", actUnapprove:"إلغاء النشر", actEdit:"تعديل", actDelete:"حذف",
+    tenantRequests:"طلبات الاستئجار الواردة", noRequests:"لا توجد طلبات حتى الآن",
+    confirmDelete:"هل أنت متأكد من حذف هذا العقار نهائياً؟",
+    confirmDeleteReq:"هل تريد حذف طلب الاستئجار هذا؟",
+    toastPropertyAdded:"تم إرسال العقار للمراجعة بنجاح",
+    toastPropertyUpdated:"تم تحديث بيانات العقار",
+    toastPropertyDeleted:"تم حذف العقار",
+    toastPropertyApproved:"تمت الموافقة ونشر العقار",
+    toastPropertyUnapproved:"تم إلغاء نشر العقار",
+    toastRequestSent:"تم إرسال طلب الاستئجار للإدارة",
+    toastRequestApproved:"تمت الموافقة على طلب المستأجر",
+    toastRequestConfirmed:"تم تأكيد المستأجر",
+    toastRequestDeleted:"تم حذف طلب الاستئجار",
+    toastImageError:"حدث خطأ في تحميل الصورة",
+    toastImageTooLarge:"حجم الصورة كبير جداً (الحد الأقصى 5MB)",
+    toastMaxImages:"الحد الأقصى 5 صور لكل عقار",
+    toastStorageWarning:"تنبيه: التخزين قارب على الامتلاء — احفظ نسخة احتياطية الآن",
+    toastBackupDone:"تم تنزيل النسخة الاحتياطية",
+    toastLocked:"تم تسجيل الخروج",
+    toastUnlocked:"تم تسجيل الدخول بنجاح",
+    notifTitle:"الإشعارات", notifClear:"مسح الكل", notifEmpty:"لا توجد إشعارات حالياً",
+    notifNewProperty:"عقار جديد بانتظار الموافقة",
+    notifNewRequest:"طلب استئجار جديد",
+    notifApproved:"تمت الموافقة على العقار",
+    contactPhone:"اتصل بنا", contactWhatsapp:"واتساب", contactEmail:"البريد", contactCta:"تواصل معنا مباشرة",
+    footerAbout:"عن MaisonPRO",
+    footerDesc:"المنصة العقارية الرائدة في جيبوتي، نقدم أفضل الشقق والفيلات للإيجار في أرقى الأحياء بمعايير احترافية عالمية.",
+    footerContact:"تواصل معنا", footerLocation:"جيبوتي — جميع الأحياء",
+    footerHours:"ساعات العمل", footerHoursText:"متاحون على مدار الساعة للإجابة على استفساراتكم ودعمكم في العثور على منزل أحلامكم.",
+    footerText:"منصة العقارات الفاخرة في جيبوتي. جميع الحقوق محفوظة.",
+    emptyTitle:"لا توجد عقارات حتى الآن",
+    emptyDesc:"كن أول من يضيف عقاره — اضغط على «أضف مسكنك»",
+    emptyFilterTitle:"لا توجد نتائج",
+    emptyFilterDesc:"جرّب تصفية أو كلمة بحث أخرى",
+    priceLabel:"شهرياً",
+    reqField:"الاسم", reqPhone:"الهاتف", reqCheckIn:"الدخول", reqGuests:"أفراد", reqBudget:"الميزانية",
+    btnCall:"اتصال",
+    passwordTitle:"🔐 دخول الإدارة",
+    passwordDesc:"أدخل كلمة المرور للوصول إلى لوحة التحكم",
+    passwordHint:"كلمة المرور الافتراضية:",
+    labelPassword:"كلمة المرور",
+    phPassword:"أدخل كلمة المرور",
+    pwError:"كلمة المرور غير صحيحة",
+    btnUnlock:"دخول",
+    viewsLabel:"مشاهدة",
+    storageLabel:"مساحة التخزين",
+    btnBackup:"نسخة احتياطية",
+    amenityAC:"تكييف", amenityPool:"مسبح", amenitySecurity:"حراسة", amenityParking:"موقف سيارات",
+    amenityWifi:"إنترنت", amenityGarden:"حديقة", amenityFurnished:"مفروش", amenityElevator:"مصعد",
+    amenityBalcony:"شرفة", amenityGenerator:"مولد كهرباء",
+    viewList:"قائمة", viewMap:"مناطق", favoriteAdded:"تمت الإضافة للمفضلة", favoriteRemoved:"تمت الإزالة من المفضلة",
+    shareTitle:"مشاركة العقار", shareWhatsapp:"واتساب", shareFacebook:"فيسبوك", shareTwitter:"تويتر", copyLink:"نسخ الرابط", copiedText:"تم النسخ", downloadCard:"تحميل البطاقة"
+  },
+  en:{
+    tagline:"PREMIUM · DJIBOUTI",
+    addProperty:"List Property",
+    adminBtn:"Admin",
+    heroBadge:"Djibouti's #1 Real Estate Platform",
+    heroTitle1:"Discover your dream home",
+    heroTitle2:"in Djibouti",
+    heroDesc:"The finest apartments and villas for rent in prestigious neighborhoods — Héron, Haramous, Gabode, Salines Ouest and more",
+    statListed:"Listed", statRegions:"Areas", statRequests:"Requests",
+    publicTitle:"Available Properties",
+    publicDesc:"Explore our carefully curated selection of the finest residences in Djibouti",
+    filterAll:"All",
+    searchPlaceholder:"Search by name or area...",
+    adminTitle:"Admin Dashboard",
+    adminDesc:"Manage properties, approve listings and track tenant requests",
+    adminLockedTitle:"🔒 Admin Protected",
+    adminLockedDesc:"Login required to access the dashboard",
+    btnUnlockAdmin:"Admin Login",
+    btnLogout:"Logout",
+    tabAll:"All Properties", tabPending:"Pending", tabApproved:"Approved",
+    addTitle:"Add New Property", addDesc:"Enter the property details for review",
+    editTitle:"Edit Property", editDesc:"Update the property information",
+    labelName:"Property Name", labelRegion:"Area / Neighborhood", labelType:"Property Type",
+    labelRooms:"Rooms", labelBaths:"Bathrooms", labelArea:"Area (m²)",
+    labelAmenities:"Amenities", labelDescription:"Description",
+    labelPriceDJF:"Price (DJF)", labelPriceUSD:"Price (USD)",
+    labelImages:"Property Images (up to 5)", optional:"Optional",
+    imgHint:"JPG, PNG — Max 5MB per image, first photo is the cover",
+    coverLabel:"Cover",
+    labelFullName:"Full Name", labelPhone:"Phone / WhatsApp",
+    labelCheckIn:"Check-in Date", labelGuests:"Guests",
+    labelBudget:"Budget", labelNotes:"Notes & Questions",
+    phName:"e.g. Jasmine Luxury Villa", phRegion:"e.g. Héron",
+    phArea:"e.g. 180",
+    phDescription:"Describe the property's key features...",
+    phFullName:"John Smith", phPhone:"+253 77 123 456",
+    phBudget:"e.g. 500,000 DJF or 2,800 USD",
+    phNotes:"e.g. Is T3 AC available? What services are included...",
+    hintRegion:"You can type any neighborhood name manually",
+    hintBudget:"State your available budget",
+    rateInfo:"Official rate: 1 USD = 177.721 DJF — conversion happens automatically",
+    autoLabel:"Auto",
+    selectType:"Select type",
+    typeApartment:"Apartment", typeVilla:"Villa", typeStudio:"Studio", typeHouse:"House",
+    btnCancel:"Cancel", btnSubmit:"Submit for Review", btnUpdate:"Save Changes",
+    btnSendRequest:"Send Request",
+    tenantTitle:"Rental Request", tenantDesc:"Fill in your details to request this property",
+    btnRent:"Request to Rent", btnShare:"Share",
+    detailTitle:"Property Details",
+    specRooms:"Rooms", specBaths:"Baths", specArea:"m²",
+    statusPending:"Pending", statusApproved:"Approved", statusRejected:"Rejected", statusConfirmed:"Confirmed",
+    actApprove:"Approve", actUnapprove:"Unpublish", actEdit:"Edit", actDelete:"Delete",
+    tenantRequests:"Incoming Rental Requests", noRequests:"No requests yet",
+    confirmDelete:"Are you sure you want to permanently delete this property?",
+    confirmDeleteReq:"Delete this rental request?",
+    toastPropertyAdded:"Property submitted for review",
+    toastPropertyUpdated:"Property updated",
+    toastPropertyDeleted:"Property deleted",
+    toastPropertyApproved:"Property approved and published",
+    toastPropertyUnapproved:"Property unpublished",
+    toastRequestSent:"Rental request submitted",
+    toastRequestApproved:"Tenant request approved",
+    toastRequestConfirmed:"Tenant confirmed",
+    toastRequestDeleted:"Request deleted",
+    toastImageError:"Error loading image",
+    toastImageTooLarge:"Image too large (max 5MB)",
+    toastMaxImages:"Maximum 5 images per property",
+    toastStorageWarning:"Warning: storage is nearly full — back up your data now",
+    toastBackupDone:"Backup downloaded",
+    toastLocked:"Logged out",
+    toastUnlocked:"Logged in successfully",
+    notifTitle:"Notifications", notifClear:"Clear all", notifEmpty:"No notifications yet",
+    notifNewProperty:"New property awaiting approval",
+    notifNewRequest:"New rental request",
+    notifApproved:"Property has been approved",
+    contactPhone:"Call us", contactWhatsapp:"WhatsApp", contactEmail:"Email", contactCta:"Chat with us",
+    footerAbout:"About MaisonPRO",
+    footerDesc:"The leading real estate platform in Djibouti, offering the finest apartments and villas for rent with world-class professional standards.",
+    footerContact:"Contact Us", footerLocation:"Djibouti — All Areas",
+    footerHours:"Working Hours", footerHoursText:"Available 24/7 to answer your questions and support you in finding your dream home.",
+    footerText:"Djibouti's premium real estate platform. All rights reserved.",
+    emptyTitle:"No properties yet",
+    emptyDesc:"Be the first — click 'List Property'",
+    emptyFilterTitle:"No results",
+    emptyFilterDesc:"Try a different filter or search term",
+    priceLabel:"per month",
+    reqField:"Name", reqPhone:"Phone", reqCheckIn:"Check-in", reqGuests:"Guests", reqBudget:"Budget",
+    btnCall:"Call",
+    passwordTitle:"🔐 Admin Login",
+    passwordDesc:"Enter the password to access the dashboard",
+    passwordHint:"Default password:",
+    labelPassword:"Password",
+    phPassword:"Enter password",
+    pwError:"Incorrect password",
+    btnUnlock:"Unlock",
+    viewsLabel:"views",
+    storageLabel:"Storage used",
+    btnBackup:"Backup",
+    amenityAC:"AC", amenityPool:"Pool", amenitySecurity:"Security", amenityParking:"Parking",
+    amenityWifi:"WiFi", amenityGarden:"Garden", amenityFurnished:"Furnished", amenityElevator:"Elevator",
+    amenityBalcony:"Balcony", amenityGenerator:"Generator",
+    viewList:"List", viewMap:"Districts", favoriteAdded:"Added to favorites", favoriteRemoved:"Removed from favorites",
+    shareTitle:"Share Property", shareWhatsapp:"WhatsApp", shareFacebook:"Facebook", shareTwitter:"Twitter", copyLink:"Copy Link", copiedText:"Copied", downloadCard:"Download Card"
+  },
+  fr:{
+    tagline:"PREMIUM · DJIBOUTI",
+    addProperty:"Ajouter un bien",
+    adminBtn:"Admin",
+    heroBadge:"1ère plateforme immobilière à Djibouti",
+    heroTitle1:"Découvrez la maison de vos rêves",
+    heroTitle2:"à Djibouti",
+    heroDesc:"Les plus beaux appartements et villas à louer dans les quartiers prestigieux — Héron, Haramous, Gabode, Salines Ouest et plus",
+    statListed:"Biens", statRegions:"Quartiers", statRequests:"Demandes",
+    publicTitle:"Biens disponibles",
+    publicDesc:"Explorez notre sélection soigneusement choisie des meilleures résidences de Djibouti",
+    filterAll:"Tous",
+    searchPlaceholder:"Rechercher par nom ou quartier...",
+    adminTitle:"Tableau de bord Admin",
+    adminDesc:"Gérer les biens, approuver les annonces et suivre les demandes",
+    adminLockedTitle:"🔒 Admin protégé",
+    adminLockedDesc:"Connexion requise pour accéder au tableau de bord",
+    btnUnlockAdmin:"Connexion Admin",
+    btnLogout:"Déconnexion",
+    tabAll:"Tous les biens", tabPending:"En attente", tabApproved:"Approuvés",
+    addTitle:"Ajouter un nouveau bien", addDesc:"Saisissez les détails pour examen",
+    editTitle:"Modifier le bien", editDesc:"Mettez à jour les informations",
+    labelName:"Nom du bien", labelRegion:"Quartier", labelType:"Type de bien",
+    labelRooms:"Pièces", labelBaths:"Salles de bain", labelArea:"Surface (m²)",
+    labelAmenities:"Commodités", labelDescription:"Description",
+    labelPriceDJF:"Prix (DJF)", labelPriceUSD:"Prix (USD)",
+    labelImages:"Photos du bien (jusqu'à 5)", optional:"Facultatif",
+    imgHint:"JPG, PNG — Max 5Mo par photo, la 1ère est la couverture",
+    coverLabel:"Couverture",
+    labelFullName:"Nom complet", labelPhone:"Téléphone / WhatsApp",
+    labelCheckIn:"Date d'arrivée", labelGuests:"Occupants",
+    labelBudget:"Budget", labelNotes:"Notes & Questions",
+    phName:"ex. Villa Jasmin de luxe", phRegion:"ex. Héron",
+    phArea:"ex. 180",
+    phDescription:"Décrivez les atouts du bien...",
+    phFullName:"Jean Dupont", phPhone:"+253 77 123 456",
+    phBudget:"ex. 500 000 DJF ou 2 800 USD",
+    phNotes:"ex. Climatisation T3 disponible ? Services inclus...",
+    hintRegion:"Vous pouvez saisir n'importe quel nom de quartier",
+    hintBudget:"Indiquez votre budget disponible",
+    rateInfo:"Taux officiel: 1 USD = 177,721 DJF — conversion automatique",
+    autoLabel:"Auto",
+    selectType:"Choisir le type",
+    typeApartment:"Appartement", typeVilla:"Villa", typeStudio:"Studio", typeHouse:"Maison",
+    btnCancel:"Annuler", btnSubmit:"Soumettre", btnUpdate:"Enregistrer",
+    btnSendRequest:"Envoyer la demande",
+    tenantTitle:"Demande de location", tenantDesc:"Remplissez vos informations pour ce bien",
+    btnRent:"Demander la location", btnShare:"Partager",
+    detailTitle:"Détails du bien",
+    specRooms:"Pièces", specBaths:"SDB", specArea:"m²",
+    statusPending:"En attente", statusApproved:"Approuvé", statusRejected:"Refusé", statusConfirmed:"Confirmé",
+    actApprove:"Approuver", actUnapprove:"Dépublier", actEdit:"Modifier", actDelete:"Supprimer",
+    tenantRequests:"Demandes de location reçues", noRequests:"Aucune demande",
+    confirmDelete:"Supprimer définitivement ce bien ?",
+    confirmDeleteReq:"Supprimer cette demande de location ?",
+    toastPropertyAdded:"Bien soumis pour examen",
+    toastPropertyUpdated:"Bien mis à jour",
+    toastPropertyDeleted:"Bien supprimé",
+    toastPropertyApproved:"Bien approuvé et publié",
+    toastPropertyUnapproved:"Bien dépublié",
+    toastRequestSent:"Demande de location envoyée",
+    toastRequestApproved:"Demande approuvée",
+    toastRequestConfirmed:"Locataire confirmé",
+    toastRequestDeleted:"Demande supprimée",
+    toastImageError:"Erreur lors du chargement de l'image",
+    toastImageTooLarge:"Image trop grande (max 5Mo)",
+    toastMaxImages:"Maximum 5 photos par bien",
+    toastStorageWarning:"Attention : le stockage est presque plein — faites une sauvegarde maintenant",
+    toastBackupDone:"Sauvegarde téléchargée",
+    toastLocked:"Déconnecté",
+    toastUnlocked:"Connecté avec succès",
+    notifTitle:"Notifications", notifClear:"Tout effacer", notifEmpty:"Aucune notification",
+    notifNewProperty:"Nouveau bien en attente d'approbation",
+    notifNewRequest:"Nouvelle demande de location",
+    notifApproved:"Le bien a été approuvé",
+    contactPhone:"Appelez-nous", contactWhatsapp:"WhatsApp", contactEmail:"Email", contactCta:"Discutez avec nous",
+    footerAbout:"À propos",
+    footerDesc:"La plateforme immobilière leader à Djibouti, offrant les meilleurs biens avec des standards professionnels internationaux.",
+    footerContact:"Contactez-nous", footerLocation:"Djibouti — Tous les quartiers",
+    footerHours:"Horaires", footerHoursText:"Disponible 24/7 pour répondre à vos questions et vous aider à trouver la maison de vos rêves.",
+    footerText:"Plateforme immobilière premium à Djibouti. Tous droits réservés.",
+    emptyTitle:"Aucun bien pour le moment",
+    emptyDesc:"Soyez le premier — cliquez sur 'Ajouter un bien'",
+    emptyFilterTitle:"Aucun résultat",
+    emptyFilterDesc:"Essayez un autre filtre ou terme",
+    priceLabel:"par mois",
+    reqField:"Nom", reqPhone:"Tél.", reqCheckIn:"Arrivée", reqGuests:"Pers.", reqBudget:"Budget",
+    btnCall:"Appeler",
+    passwordTitle:"🔐 Connexion Admin",
+    passwordDesc:"Entrez le mot de passe pour accéder au tableau de bord",
+    passwordHint:"Mot de passe par défaut:",
+    labelPassword:"Mot de passe",
+    phPassword:"Entrez le mot de passe",
+    pwError:"Mot de passe incorrect",
+    btnUnlock:"Déverrouiller",
+    viewsLabel:"vues",
+    storageLabel:"Stockage utilisé",
+    btnBackup:"Sauvegarde",
+    amenityAC:"Climatisation", amenityPool:"Piscine", amenitySecurity:"Sécurité", amenityParking:"Parking",
+    amenityWifi:"WiFi", amenityGarden:"Jardin", amenityFurnished:"Meublé", amenityElevator:"Ascenseur",
+    amenityBalcony:"Balcon", amenityGenerator:"Générateur",
+    viewList:"Liste", viewMap:"Quartiers", favoriteAdded:"Ajouté aux favoris", favoriteRemoved:"Supprimé des favoris",
+    shareTitle:"Partager le bien", shareWhatsapp:"WhatsApp", shareFacebook:"Facebook", shareTwitter:"Twitter", copyLink:"Copier le lien", copiedText:"Copié", downloadCard:"Télécharger la carte"
+  }
+};
+
+/* ---------- STATE ---------- */
+const STORAGE_KEY = "maisonpro_data_v4";
+const AUTH_KEY = "maisonpro_auth_v4";
+let state = {
+  lang:"ar",
+  properties:[],
+  notifications:[],
+  activeFilter:"all",
+  adminTab:"all",
+  favorites:[],  // array of property IDs
+  mapView:false  // false = list, true = map
+};
+let isAdminAuthed = false;
+let currentImages = []; // array of dataURLs, max 5
+let currentEditLang = "ar";
+function switchEditLang(lang){
+  currentEditLang = lang;
+  document.querySelectorAll(".lang-tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.lang===lang));
+  const p = state.properties.find(x=>x.id===document.getElementById("property-id").value);
+  if(!p) return;
+  // Load values for the selected language
+  document.getElementById("p-name").value = getTextInLang(p.name, lang) || "";
+  document.getElementById("p-description").value = getTextInLang(p.description, lang) || "";
+}
+let currentDetailImageIndex = 0;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      state.properties = parsed.properties || [];
+      state.notifications = parsed.notifications || [];
+      state.lang = parsed.lang || (navigator.language.startsWith("ar")?"ar":navigator.language.startsWith("fr")?"fr":"en");
+      state.favorites = parsed.favorites || [];
+      state.mapView = parsed.mapView || false;
+      // migrate old formats
+      state.properties.forEach(p=>{
+        // migrate old single-image field to images array
+        if(!p.images){
+          p.images = p.image ? [p.image] : [];
+        }
+        // migrate old single-language name/description to multilingual
+        if(typeof p.name === "string"){
+          p.name = {ar:p.name, en:p.name, fr:p.name};
+        }
+        if(typeof p.description === "string"){
+          p.description = {ar:p.description, en:p.description, fr:p.description};
+        }
+        if(p.views === undefined) p.views = 0;
+        if(!p.amenities) p.amenities = [];
+        if(p.area === undefined) p.area = null;
+        if(p.baths === undefined) p.baths = null;
+        if(!p.geoData) p.geoData = null; // will set during render
+      });
+    }
+  }catch(e){console.warn(e)}
+  try{
+    isAdminAuthed = sessionStorage.getItem(AUTH_KEY) === "true";
+  }catch(e){}
+  if(!state.properties.length) seedData();
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      lang:state.lang,
+      properties:state.properties,
+      notifications:state.notifications,
+      favorites:state.favorites,
+      mapView:state.mapView
+    }));
+    checkStorageUsage();
+  }catch(e){
+    console.warn("localStorage error:", e);
+    showToast("toastImageTooLarge", "error");
+  }
+}
+
+function seedData(){
+  state.properties = [
+    {
+      id:"p_seed_1", 
+      name:{ar:"فيلا أفق الذهب", en:"Villa Horizon d'Or", fr:"Villa Horizon d'Or"},
+      region:"Héron", type:"villa", rooms:5, baths:3, area:320,
+      amenities:["pool","security","parking","garden","ac"], 
+      description:{ar:"فيلا فاخرة مع مسبح وحديقة واسعة وأنظمة أمان متقدمة", en:"Luxury villa with swimming pool, spacious garden and advanced security systems", fr:"Villa luxueuse avec piscine, grand jardin et systèmes de sécurité avancés"},
+      priceDJF:1800000, priceUSD:Math.round(1800000/DJF_PER_USD), status:"approved",
+      createdAt:Date.now()-86400000*3, images:[], views:0,
+      requests:[
+        {id:"r1", fullName:"Abdullah Hassan", phone:"+253 77 456 789", checkIn:"2026-07-15", guests:4, budget:"1,800,000 DJF", notes:"Is the swimming pool heated?", status:"pending", createdAt:Date.now()-86400000}
+      ]
+    },
+    {
+      id:"p_seed_2", 
+      name:{ar:"شقة فاخرة بحي سالين", en:"Luxury Apartment Salines", fr:"Appartement Luxe Salines"},
+      region:"Salines Ouest", type:"apartment", rooms:3, baths:2, area:140,
+      amenities:["ac","wifi","elevator"], 
+      description:{ar:"شقة حديثة مع مصعد وإنترنت عالي السرعة", en:"Modern apartment with elevator and high-speed internet", fr:"Appartement moderne avec ascenseur et internet haut débit"},
+      priceDJF:850000, priceUSD:Math.round(850000/DJF_PER_USD), status:"approved",
+      createdAt:Date.now()-86400000*2, images:[], views:0, requests:[]
+    },
+    {
+      id:"p_seed_3", 
+      name:{ar:"استوديو عصري في قابودة", en:"Modern Studio Gabode", fr:"Studio Moderne Gabode"},
+      region:"Gabode", type:"studio", rooms:1, baths:1, area:45,
+      amenities:["ac","furnished"], 
+      description:{ar:"استوديو مفروش بالكامل مع تكييف هواء", en:"Fully furnished studio with air conditioning", fr:"Studio entièrement meublé avec climatisation"},
+      priceDJF:320000, priceUSD:Math.round(320000/DJF_PER_USD), status:"pending",
+      createdAt:Date.now()-86400000, images:[], views:0, requests:[]
+    }
+  ];
+  state.notifications = [
+    {id:"n1", type:"property", title:"Villa Horizon d'Or", message:"عقار جديد بانتظار الموافقة", read:false, createdAt:Date.now()-86400000*3},
+    {id:"n2", type:"request", title:"Abdullah Hassan", message:"طلب استئجار جديد لـ Villa Horizon d'Or", read:false, createdAt:Date.now()-86400000}
+  ];
+  saveState();
+}
+
+/* ---------- AUTO CURRENCY CONVERSION ---------- */
+function autoConvertDJF(){
+  const djf = parseFloat(document.getElementById("p-price-djf").value);
+  if(!isNaN(djf) && djf>0){
+    document.getElementById("p-price-usd").value = Math.round(djf / DJF_PER_USD);
+  } else {
+    document.getElementById("p-price-usd").value = "";
+  }
+}
+function autoConvertUSD(){
+  const usd = parseFloat(document.getElementById("p-price-usd").value);
+  if(!isNaN(usd) && usd>0){
+    document.getElementById("p-price-djf").value = Math.round(usd * DJF_PER_USD);
+  } else {
+    document.getElementById("p-price-djf").value = "";
+  }
+}
+
+/* ---------- IMAGE UPLOAD (MULTI) ---------- */
+function compressImage(file, maxWidth=900, quality=0.7){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=>reject(new Error("read"));
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onerror = ()=>reject(new Error("load"));
+      img.onload = ()=>{
+        try{
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if(w > maxWidth){ h = Math.round(h * (maxWidth/w)); w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        }catch(err){ reject(err); }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderImageUploadGrid(){
+  const grid = document.getElementById("image-upload-grid");
+  if(!grid) return;
+  let html = "";
+  for(let i=0;i<MAX_IMAGES;i++){
+    const img = currentImages[i];
+    if(img){
+      html += `
+        <div class="image-slot has-image">
+          ${i===0?`<span class="cover-badge">${t('coverLabel')}</span>`:""}
+          <img src="${escapeHtml(img)}" alt="">
+          <button type="button" class="image-remove-sm" onclick="removeImageSlot(${i})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>`;
+    } else if(i === currentImages.length){
+      html += `
+        <div class="image-slot">
+          <input type="file" accept="image/*" onchange="handleImageUpload(event, ${i})">
+          <div class="placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>+</span>
+          </div>
+        </div>`;
+    } else {
+      html += `<div class="image-slot" style="opacity:.3;pointer-events:none">
+          <div class="placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+        </div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+async function handleImageUpload(e, slotIndex){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){
+    showToast("toastImageError", "error");
+    return;
+  }
+  if(file.size > 5 * 1024 * 1024){
+    showToast("toastImageTooLarge", "error");
+    e.target.value = "";
+    return;
+  }
+  if(currentImages.length >= MAX_IMAGES){
+    showToast("toastMaxImages", "error");
+    return;
+  }
+  try{
+    const dataUrl = await compressImage(file, 900, 0.7);
+    currentImages.push(dataUrl);
+    renderImageUploadGrid();
+  }catch(err){
+    console.error(err);
+    showToast("toastImageError", "error");
+  }
+}
+
+function removeImageSlot(index){
+  currentImages.splice(index, 1);
+  renderImageUploadGrid();
+}
+
+/* ---------- STORAGE USAGE CHECK ---------- */
+function getStorageUsageBytes(){
+  try{
+    const raw = localStorage.getItem(STORAGE
