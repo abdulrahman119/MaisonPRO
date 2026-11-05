@@ -452,9 +452,9 @@ select.control{
 .card-specs span{display:flex;align-items:center;gap:4px}
 .card-specs svg{width:14px;height:14px;color:var(--ink-4);flex:none}
 .card-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between;gap:10px}
-.price{min-width:0}
-.price .p{font-size:1.04rem;font-weight:800;color:var(--ink);line-height:1.2;letter-spacing:-.2px;white-space:nowrap}
-.price .p small{font-size:.68rem;font-weight:600;color:var(--ink-3);margin-inline-start:4px;letter-spacing:0}
+.price{min-width:0;flex:1 1 auto}
+.price .p{font-size:1.04rem;font-weight:800;color:var(--ink);line-height:1.2;letter-spacing:0;white-space:nowrap}
+.price .p small{font-size:.66rem;font-weight:600;color:var(--ink-3);margin-inline-start:5px;letter-spacing:0;opacity:.85}
 .price .s{font-size:.71rem;color:var(--ink-4);font-weight:600}
 .card-cta{display:flex;gap:6px;flex:none}
 .card-cta .btn{padding:8px 12px;font-size:.8rem}
@@ -717,7 +717,7 @@ select.control{
 .detail-loc{display:flex;align-items:center;gap:5px;font-size:.82rem;color:var(--ink-2);font-weight:600;margin-top:6px}
 .detail-loc svg{width:14px;height:14px;color:var(--teal)}
 .detail-price{text-align:end;flex:none}
-.detail-price .p{font-size:1.35rem;font-weight:800;line-height:1.2;letter-spacing:-.3px;white-space:nowrap}
+.detail-price .p{font-size:1.35rem;font-weight:800;line-height:1.2;letter-spacing:0;white-space:nowrap}
 .detail-price .p small{font-size:.76rem;font-weight:600;color:var(--ink-3);margin-inline-start:4px}
 .detail-price .s{font-size:.74rem;color:var(--ink-3);margin-top:2px}
 
@@ -867,6 +867,8 @@ select.control{
   .toasts{inset-inline:12px;max-width:none}
 }
 @media (max-width:380px){
+  .price .p{font-size:.9rem;white-space:normal}
+  .price .p small{display:block;margin-inline-start:0}
   .brand-name{font-size:.95rem}
   .chip{font-size:.74rem;padding:5px 10px}
   .card-media{width:38%}
