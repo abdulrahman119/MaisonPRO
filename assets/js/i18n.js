@@ -93,7 +93,7 @@ const STRINGS = {
     cRooms: '{n} غرف',
     cRooms1: 'غرفة واحدة',
     cBaths: '{n} حمام',
-    cBaths1: 'حمام',
+    cBaths1: 'حمام واحد',
     cArea: '{n} م²',
     details: 'التفاصيل',
     call: 'اتصال',
