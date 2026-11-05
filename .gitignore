@@ -1,0 +1,7 @@
+# temporary / tooling
+node_modules/
+.DS_Store
+*.log
+
+# source images used only while building the demo assets
+image-search/
