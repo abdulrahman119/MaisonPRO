@@ -66,28 +66,6 @@
     return p.deal === 'rent' ? t('tagRent') : p.deal === 'daily' ? t('tagDaily') : t('tagSale');
   }
 
-  /* ---------- whatsapp ---------- */
-  function waLink(msg) {
-    const phone = String(CFG.whatsapp || '').replace(/\D/g, '');
-    return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-  }
-  function propertyMsg(p) {
-    return t('waProperty', {
-      title: loc(p.title),
-      id: p.id,
-      district: districtName(p.district),
-      deal: dealWord(p),
-      price: fmt(priceOf(p)) + (p.deal === 'sale' ? '' : ' ' + unitLabel(p))
-    });
-  }
-  function hydrateWa() {
-    $$('.js-wa').forEach(a => {
-      a.href = waLink(t('waGeneral'));
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-    });
-  }
-
   /* ---------- toast ---------- */
   const ICONS = {
     ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg>',
@@ -152,12 +130,19 @@
         ${esc(loc(d))}<b>${n}</b></button>`;
     }).join('');
 
-    /* marquee strip */
-    const mq = $('#marquee-track');
-    if (mq) {
-      const words = DISTRICTS.map(d => loc(d)).concat(TYPES.map(x => loc(x)));
-      const line = words.map(w => `<span>${esc(w)}</span>`).join('');
-      mq.innerHTML = line + line;
+    /* category chips */
+    const catRow = $('#cat-row');
+    if (catRow) {
+      const ic = {
+        all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+        daily: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'
+      };
+      catRow.innerHTML =
+        `<button type="button" class="cat" data-pill="type">${ic.all}<span>${esc(t('dealAll'))}</span></button>` +
+        TYPES.map(x => `<button type="button" class="cat" data-type-link="${esc(x.id)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M9 21v-8h6v8"/></svg>
+          <span>${esc(loc(x))}</span></button>`).join('') +
+        `<button type="button" class="cat" data-quick="all|daily">${ic.daily}<span>${esc(t('dealDaily'))}</span></button>`;
     }
 
     /* amenity picker */
@@ -219,32 +204,27 @@
             aria-pressed="${fav}" aria-label="${esc(fav ? t('toastFavRemove') : t('toastFavAdd'))}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21.2l7.8-7.8 1.1-1.1a5.5 5.5 0 0 0-.1-7.7Z"/></svg>
     </button>
-    <div class="card-price">
-      <div class="p">${esc(money(priceOf(p)).v)}<small>${esc(money(priceOf(p)).c)}</small></div>
-      <div class="s">${esc(unitLabel(p))}</div>
-    </div>
   </div>
   <div class="card-body">
+    <h3 class="card-title">${esc(loc(p.title))}</h3>
     <span class="card-loc">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
       ${esc(districtName(p.district))}
     </span>
-    <h3 class="card-title">${esc(loc(p.title))}</h3>
     <div class="card-specs">
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 18h18M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>${esc(p.rooms === 1 ? t('cRooms1') : t('cRooms', { n: p.rooms }))}</span>
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4Z"/><path d="M6 12V6a2 2 0 0 1 4 0"/><path d="M6 19v2M18 19v2"/></svg>${esc(p.baths === 1 ? t('cBaths1') : t('cBaths', { n: p.baths }))}</span>
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M9 4v16M4 9h16"/></svg>${esc(t('cArea', { n: num(p.area) }))}</span>
     </div>
     <div class="card-foot">
+      <div class="price">
+        <div class="p">${esc(money(priceOf(p)).v)}<small>${esc(money(priceOf(p)).c)}</small></div>
+        <div class="s">${esc(unitLabel(p))}</div>
+      </div>
       <div class="card-cta">
-        <button class="btn btn--navy" type="button" data-detail="${esc(p.id)}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
+        <button class="btn btn--outline" type="button" data-detail="${esc(p.id)}">
           <span>${esc(t('details'))}</span>
         </button>
-        <a class="btn btn--wa" href="${esc(waLink(propertyMsg(p)))}" target="_blank" rel="noopener noreferrer"
-           aria-label="WhatsApp — ${esc(loc(p.title))}">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.42.25-.69.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.89 9.89-9.89 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.89-9.88 9.89m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.94L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9a11.82 11.82 0 0 0-3.48-8.41Z"/></svg>
-        </a>
       </div>
     </div>
   </div>
@@ -326,6 +306,13 @@
     const ft = $('#fav-toggle');
     if (ft) { ft.classList.toggle('is-on', S.favsOnly); ft.setAttribute('aria-pressed', String(S.favsOnly)); }
     $$('.chip[data-quick]').forEach(c => c.classList.remove('is-on'));
+    $$('.cat').forEach(c => {
+      let on = false;
+      if (c.dataset.pill === 'type') on = (S.type === 'all' && S.deal !== 'daily');
+      else if (c.dataset.typeLink) on = (S.type === c.dataset.typeLink);
+      else if (c.dataset.quick) on = (S.deal === 'daily');
+      c.classList.toggle('is-on', on);
+    });
   }
 
   function reset(silent) {
@@ -440,19 +427,18 @@
   </div>
 
   <div class="d-actions">
-    <a class="btn btn--wa" href="${esc(waLink(propertyMsg(p)))}" target="_blank" rel="noopener noreferrer">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.89 9.89-9.89 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.89-9.88 9.89m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.94L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9a11.82 11.82 0 0 0-3.48-8.41Z"/></svg>
-      <span>${esc(t('contactWhatsapp'))}</span>
-    </a>
-    <a class="btn btn--ghost" href="tel:${esc(String(p.owner ? p.owner.phone : CFG.whatsapp).replace(/\D/g, ''))}">
+    <button class="btn btn--primary" type="button" data-view-req="${esc(p.id)}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/><path d="m9 16 2 2 4-4"/></svg>
+      <span>${esc(t('askView'))}</span>
+    </button>
+    <a class="btn btn--outline" href="tel:${esc(String(p.owner ? p.owner.phone : (CFG.phone || '')).replace(/\D/g, ''))}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 1 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2Z"/></svg>
       <span>${esc(t('call'))}</span>
     </a>
-    <button class="btn btn--ghost" type="button" id="share-btn" aria-label="${esc(t('share'))}">
+    <button class="btn btn--outline" type="button" id="share-btn" aria-label="${esc(t('share'))}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
     </button>
-  </div>
-</div>`;
+  </div>`;
   }
 
   function galTo(i) {
@@ -468,6 +454,7 @@
   function openDetail(id) {
     const p = find(id);
     if (!p) return;
+    if (ST && ST.bumpViews) ST.bumpViews(id);
     lastFocus = document.activeElement;
     renderDetail(p);
     const m = $('#modal');
@@ -618,18 +605,6 @@
     if (window.MPAdmin) MPAdmin.render();
     toast(t('toastSent'), 'ok');
 
-    const msg = [
-      'طلب إضافة عقار / Nouvelle annonce',
-      '',
-      '🏠 ' + title,
-      '🔖 ' + p.id,
-      '📍 ' + districtName(district) + ' — ' + dealWord(p),
-      '💰 ' + fmt(price) + (deal === 'sale' ? '' : ' ' + unitLabel(p)),
-      nightly ? '🌙 ' + num(nightly) + ' DJF' : '',
-      '👤 ' + p.owner.name + ' — ' + $('#o-phone').value.trim()
-    ].filter(Boolean).join('\n');
-
-    $$('[data-wa="success"]').forEach(a => { a.href = waLink(msg); a.target = '_blank'; a.rel = 'noopener noreferrer'; });
     $('#add-property').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -730,19 +705,6 @@
       e.currentTarget.setAttribute('aria-expanded', String(open));
     });
 
-    $$('[data-quick]').forEach(b => b.addEventListener('click', () => {
-      const [a, deal] = b.dataset.quick.split('|');
-      S.deal = deal; S.budget = 0; S.beds = 0;
-      if (TYPES.some(x => x.id === a)) { S.type = a; S.district = 'all'; }
-      else { S.district = a; S.type = 'all'; }
-      S.favsOnly = false;
-      S.shown = CFG.pageSize || 6;
-      fillOptions(); render();
-      $$('.chip[data-quick]').forEach(c => c.classList.remove('is-on'));
-      b.classList.add('is-on');
-      $('#properties').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }));
-
     /* toolbar */
     $$('[data-cur]').forEach(b => b.addEventListener('click', () => {
       S.cur = b.dataset.cur;
@@ -786,6 +748,18 @@
         $('#properties').scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
+      const quick = e.target.closest('[data-quick]');
+      if (quick) {
+        const [a, deal] = quick.dataset.quick.split('|');
+        S.deal = deal; S.budget = 0; S.beds = 0;
+        if (TYPES.some(x => x.id === a)) { S.type = a; S.district = 'all'; }
+        else { S.district = a; S.type = 'all'; }
+        S.favsOnly = false;
+        S.shown = CFG.pageSize || 6;
+        fillOptions(); render();
+        $('#properties').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
       const tlink = e.target.closest('[data-type-link]');
       if (tlink) {
         S.type = tlink.dataset.typeLink; S.deal = 'all'; S.budget = 0; S.beds = 0;
@@ -812,6 +786,8 @@
       if (g) { galTo(galIdx + Number(g.dataset.gal)); return; }
       const th = e.target.closest('[data-thumb]');
       if (th) { galTo(Number(th.dataset.thumb)); return; }
+      const vr = e.target.closest('[data-view-req]');
+      if (vr) { openContactWithRef(vr.dataset.viewReq); return; }
       if (e.target.closest('#share-btn')) {
         const url = location.href;
         if (navigator.share) {
@@ -891,7 +867,6 @@
     document.addEventListener('langchange', () => {
       fillOptions();
       render();
-      hydrateWa();
       renderThumbs();
       if (openId) {
         const i = galIdx;
@@ -901,6 +876,57 @@
     });
   }
 
+
+  /* ---------- contact form ---------- */
+  function openContactWithRef(id) {
+    closeDetail();
+    const topic = $('#c-topic'); if (topic) topic.value = 'view';
+    const ref = $('#c-ref'); if (ref) ref.value = id || '';
+    const cf = $('#contact-form');
+    if (cf) { cf.style.display = ''; $('#contact-success').classList.remove('is-on'); }
+    const sec = $('#contact');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => { const n = $('#c-name'); if (n) n.focus({ preventScroll: true }); }, 480);
+  }
+
+  function bindContactForm() {
+    const cf = $('#contact-form');
+    if (cf) cf.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = $('#c-name').value.trim();
+      const phone = $('#c-phone').value.replace(/\D/g, '');
+      const msg = $('#c-msg').value.trim();
+      let first = null;
+      const check = (id, ok) => { fieldErr(id, !ok); if (!ok && !first) first = document.getElementById(id); };
+      check('c-name', name !== '');
+      check('c-phone', phone.length >= 8);
+      check('c-msg', msg !== '');
+      if (first) { first.focus(); first.scrollIntoView({ block: 'center' }); toast(t('toastFix'), 'err'); return; }
+
+      const item = ST ? ST.addMsg({
+        name, phone,
+        email: $('#c-email').value.trim(),
+        topic: $('#c-topic').value,
+        ref: $('#c-ref').value.trim(),
+        message: msg
+      }) : { id: 'MSG-0000' };
+
+      cf.style.display = 'none';
+      $('#contact-success').classList.add('is-on');
+      $('#contact-ref-out').textContent = item.id;
+      if (window.MPAdmin) MPAdmin.render();
+      toast(t('cfDone'), 'ok');
+    });
+
+    const again = $('#c-again');
+    if (again) again.addEventListener('click', () => {
+      const cf2 = $('#contact-form');
+      cf2.reset();
+      $$('.has-err').forEach(el => el.classList.remove('has-err'));
+      cf2.style.display = '';
+      $('#contact-success').classList.remove('is-on');
+    });
+  }
 
   /* ---------- effects: reveal + counters ---------- */
   function observeReveals() {
@@ -1008,11 +1034,12 @@
 
   /* called by the admin panel after any moderation change */
   window.MPApp = {
+    openContactWithRef,
+    openDetail,
     refresh() {
       loadListings();
       fillOptions();
       render();
-      hydrateWa();
       if (openId) {
         const p = find(openId);
         if (p) renderDetail(p); else closeDetail();
@@ -1049,8 +1076,8 @@
 
     fillOptions();
     render();
-    hydrateWa();
     bind();
+    bindContactForm();
     bindEffects();
     bindAdminRoutes();
 

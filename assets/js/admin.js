@@ -73,11 +73,6 @@
     box.appendChild(el);
     setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, 2600);
   }
-  function waTo(phone, msg) {
-    const p = String(phone || '').replace(/\D/g, '');
-    return `https://wa.me/${p}?text=${encodeURIComponent(msg)}`;
-  }
-
   /* ---------- login ---------- */
   function showPanel(on) {
     $('#admin-login').hidden = on;
@@ -126,6 +121,42 @@
   }
 
   /* ---------- list ---------- */
+  const TOPIC = {
+    general: () => t('cfTopicGeneral'),
+    view: () => t('cfTopicView'),
+    valuation: () => t('cfTopicVal'),
+    other: () => t('cfTopicOther')
+  };
+
+  function msgRow(m) {
+    return `
+<article class="admin-row" data-msg-id="${esc(m.id)}">
+  <div class="ar-thumb" style="display:grid;place-items:center">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;color:var(--coral)"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+  </div>
+  <div class="ar-main">
+    <div class="ar-top">
+      <span class="ar-id" dir="ltr">${esc(m.id)}</span>
+      <span class="ar-when">${esc(ago(m.createdAt))}</span>
+      ${m.ref ? `<span class="ar-id" dir="ltr">${esc(m.ref)}</span>` : ''}
+    </div>
+    <h3>${esc(m.name)} · <span dir="ltr">${esc(m.phone)}</span></h3>
+    <p class="msg-body">${esc(m.message)}</p>
+    <div class="ar-meta">
+      <span>${esc(TOPIC[m.topic] ? TOPIC[m.topic]() : m.topic || '')}</span>
+      ${m.email ? `<span dir="ltr">${esc(m.email)}</span>` : ''}
+    </div>
+  </div>
+  <div class="ar-actions">
+    ${m.ref ? `<button class="btn btn--outline btn--sm" type="button" data-msg-open="${esc(m.ref)}">
+      <span>${esc(t('msgOpen'))}</span></button>` : ''}
+    <button class="icon-btn" type="button" data-msg-del="${esc(m.id)}" aria-label="${esc(t('msgDelete'))}" title="${esc(t('msgDelete'))}" style="color:var(--err)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/><path d="M10 11v5M14 11v5"/></svg>
+    </button>
+  </div>
+</article>`;
+  }
+
   function items() {
     const all = store.list();
     return all.filter(p => (p.status || 'published') === tab)
@@ -140,6 +171,7 @@
   <div class="ar-main">
     <div class="ar-top">
       ${statusPill(p.status || 'published')}
+      ${p.updatedAt ? `<span class="st st--updated"><i></i>${esc(t('adminUpdated'))}</span>` : ''}
       <span class="ar-id" dir="ltr">${esc(p.id)}</span>
       <span class="ar-when">${esc(ago(p.createdAt))}</span>
     </div>
@@ -149,6 +181,7 @@
       <span>${esc(typeName(p.type))}</span>
       <span>${esc(dealWord(p.deal))}</span>
       <span>${esc(num(shownPrice(p)))} DJF ${esc(unitWord(p.deal))}</span>
+      <span>${num(p.views || 0)} ${esc(t('ownViews'))}</span>
     </div>
     <div class="ar-owner">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
@@ -182,21 +215,34 @@
       if (el) el.textContent = counts[k];
     });
 
-    const fromVisitors = all.filter(p => p.source === 'visitor' && (p.status || '') === 'pending').length;
+    const msgs = store.msgs ? store.msgs() : [];
+    const mt = $('#tab-messages');
+    if (mt) mt.textContent = msgs.length;
     const st = $('#admin-stats');
     if (st) {
       st.innerHTML = `
         <div class="ast"><b>${counts.pending}</b><span>${esc(t('adminTabPending'))}</span></div>
         <div class="ast"><b>${counts.published}</b><span>${esc(t('adminTabPublished'))}</span></div>
         <div class="ast"><b>${counts.rejected}</b><span>${esc(t('adminTabRejected'))}</span></div>
-        <div class="ast ast--warn"><b>${fromVisitors}</b><span>${esc(t('adminAwaitingYou'))}</span></div>`;
+        <div class="ast ${msgs.length ? 'ast--warn' : ''}"><b>${msgs.length}</b><span>${esc(t('statMessages'))}</span></div>`;
     }
 
     $$('#admin-tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
 
-    const list = items();
-    $('#admin-list').innerHTML = list.map(row).join('');
-    $('#admin-empty').hidden = list.length > 0;
+    const emptyEl = $('#admin-empty');
+    const emptyTxt = emptyEl ? emptyEl.querySelector('p') : null;
+
+    if (tab === 'messages') {
+      const list = store.msgs ? store.msgs() : [];
+      $('#admin-list').innerHTML = list.map(msgRow).join('');
+      if (emptyEl) emptyEl.hidden = list.length > 0;
+      if (emptyTxt) emptyTxt.textContent = t('msgEmpty');
+    } else {
+      const list = items();
+      $('#admin-list').innerHTML = list.map(row).join('');
+      if (emptyEl) emptyEl.hidden = list.length > 0;
+      if (emptyTxt) emptyTxt.textContent = t('adminEmptyText');
+    }
   }
 
   /* ---------- accept / reject ---------- */
@@ -241,21 +287,11 @@
 
     $('#admin-modal-foot').querySelector('[data-do-reject]').addEventListener('click', () => {
       const reason = ($('#reject-note').value || '').trim() || t('rjIncomplete');
-      const item = store.transition(id, 'rejected', { rejectReason: reason });
+      store.transition(id, 'rejected', { rejectReason: reason });
       closeEditor();
       render();
       if (window.MPApp) MPApp.refresh();
       toast(t('adminRejectedToast'), 'info');
-
-      if (item && item.owner && item.owner.phone) {
-        const msg = t('waReject', { id, title: loc(item.title), reason });
-        const el = document.createElement('div');
-        el.className = 'toast toast--info toast--action';
-        el.innerHTML = `<span>${esc(t('adminNotifyOwner'))}</span>
-          <a class="btn btn--wa btn--sm" href="${esc(waTo(item.owner.phone, msg))}" target="_blank" rel="noopener noreferrer">${esc(t('whatsapp'))}</a>`;
-        $('#toasts').appendChild(el);
-        setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, 9000);
-      }
     });
   }
 
@@ -682,6 +718,19 @@
     }));
 
     $('#admin-list').addEventListener('click', e => {
+      const mdel = e.target.closest('[data-msg-del]');
+      if (mdel) {
+        if (store.delMsg) store.delMsg(mdel.dataset.msgDel);
+        render();
+        toast(t('msgDeleted'), 'info');
+        return;
+      }
+      const mopen = e.target.closest('[data-msg-open]');
+      if (mopen) {
+        const pid = mopen.dataset.msgOpen;
+        if (window.MPApp && MPApp.openDetail) MPApp.openDetail(pid);
+        return;
+      }
       const acc = e.target.closest('[data-accept]');
       if (acc) { accept(acc.dataset.accept); return; }
       const rej = e.target.closest('[data-reject]');

@@ -16,6 +16,7 @@
   const K_FAVS = 'mp:favs:v2';
   const K_SET = 'mp:settings:v1';
   const K_SESS = 'mp:admin:v1';
+  const K_MSGS = 'mp:msgs:v1';
 
   /* default moderation code — changeable from the admin panel */
   const DEFAULT_ADMIN_CODE = '2530';
@@ -106,7 +107,6 @@
     const p = all.find(x => x.id === id);
     if (!p) return null;
     p.status = status;
-    p.updatedAt = new Date().toISOString();
     if (status === 'published') {
       p.publishedAt = p.publishedAt || new Date().toISOString();
       p.isNew = true;
@@ -130,6 +130,29 @@
   const favs = () => read(K_FAVS, []);
   const setFavs = (v) => write(K_FAVS, v);
 
+  /* ---------- contact messages ---------- */
+  function msgs() { return read(K_MSGS, []); }
+  function addMsg(m) {
+    const list = msgs();
+    const item = Object.assign({}, m, {
+      id: 'MSG-' + (1000 + Math.floor(Math.random() * 8999)),
+      createdAt: new Date().toISOString()
+    });
+    list.unshift(item);
+    write(K_MSGS, list.slice(0, 100));
+    return item;
+  }
+  function delMsg(id) { write(K_MSGS, msgs().filter(x => x.id !== id)); }
+
+  /* ---------- views ---------- */
+  function bumpViews(id) {
+    const all = list();
+    const p = all.find(x => x.id === id);
+    if (!p) return;
+    p.views = (p.views || 0) + 1;
+    save(all);
+  }
+
   /* ---------- admin session ---------- */
   const isAdmin = () => read(K_SESS, false) === true;
   const setAdmin = (on) => write(K_SESS, !!on);
@@ -139,7 +162,8 @@
 
   window.MPStore = {
     list, find, upsert, save, transition, remove, resetDemo,
-    favs, setFavs, isAdmin, setAdmin, checkCode,
+    favs, setFavs,
+    msgs, addMsg, delMsg, bumpViews, isAdmin, setAdmin, checkCode,
     settings, saveSettings,
     STATUS: { pending: 'pending', published: 'published', rejected: 'rejected' }
   };
