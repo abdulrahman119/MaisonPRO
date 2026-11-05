@@ -30,6 +30,19 @@
   };
 
   /* ---------- helpers ---------- */
+  function timeline(p) {
+    const st = p.status || 'published';
+    const s2 = st === 'pending' ? 'on' : 'on';
+    const s3 = st === 'published' ? 'on' : st === 'rejected' ? 'rej' : '';
+    return `
+<div class="timeline" aria-hidden="true">
+  <span class="tl on"><i>✓</i>${esc(t('adminStep1'))}</span>
+  <span class="tl-link on"></span>
+  <span class="tl ${s2}"><i>✓</i>${esc(t('adminStep2'))}</span>
+  <span class="tl-link ${s3 ? 'on' : ''}"></span>
+  <span class="tl ${s3}"><i>✓</i>${esc(st === 'rejected' ? t('adminStep3Rej') : t('adminStep3'))}</span>
+</div>`;
+  }
   function statusPill(s) {
     const label = STATUS_LABEL[s] ? STATUS_LABEL[s]() : s;
     return `<span class="st st--${esc(s)}"><i></i>${esc(label)}</span>`;
@@ -69,7 +82,7 @@
   function showPanel(on) {
     $('#admin-login').hidden = on;
     $('#admin-panel').hidden = !on;
-    if (on) render();
+    if (on) { syncGuide(); render(); }
   }
 
   function bindLogin() {
@@ -94,6 +107,22 @@
       closeEditor();
     });
     $('#admin-settings-btn').addEventListener('click', openSettings);
+
+    /* first-run guide: how the moderation flow works */
+    const gx = $('#admin-guide-x');
+    if (gx) gx.addEventListener('click', () => {
+      const g = $('#admin-guide');
+      if (g) g.hidden = true;
+      try { localStorage.setItem('mp:guide:v1', '1'); } catch (e) {}
+    });
+  }
+
+  function syncGuide() {
+    const g = $('#admin-guide');
+    if (!g) return;
+    let done = null;
+    try { done = localStorage.getItem('mp:guide:v1'); } catch (e) {}
+    g.hidden = !!done;
   }
 
   /* ---------- list ---------- */
@@ -127,19 +156,17 @@
     </div>
   </div>
   <div class="ar-actions">
-    <button class="btn btn--ghost btn--sm" type="button" data-review="${esc(p.id)}">
+    <button class="btn btn--navy btn--sm" type="button" data-review="${esc(p.id)}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-      <span>${esc(t('adminReview'))}</span>
+      <span>${esc(t('adminOpenReview'))}</span>
     </button>
     ${p.status !== 'published' ? `
-    <button class="btn btn--ok btn--sm" type="button" data-accept="${esc(p.id)}">
+    <button class="icon-btn" type="button" data-accept="${esc(p.id)}" aria-label="${esc(t('adminAcceptPublish'))}" title="${esc(t('adminAcceptPublish'))}" style="color:var(--ok);border-color:#BCE3CE">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg>
-      <span>${esc(t('adminAccept'))}</span>
     </button>` : ''}
     ${p.status !== 'rejected' ? `
-    <button class="btn btn--ghost btn--sm btn--danger" type="button" data-reject="${esc(p.id)}">
+    <button class="icon-btn" type="button" data-reject="${esc(p.id)}" aria-label="${esc(t('adminReject'))}" title="${esc(t('adminReject'))}" style="color:var(--err);border-color:#E9B5B5">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      <span>${esc(t('adminReject'))}</span>
     </button>` : ''}
   </div>
 </article>`;
@@ -192,14 +219,18 @@
       <div class="reject-form">
         <p class="reject-lead">${esc(t('adminRejectLead'))}</p>
         <div class="reject-chips">
-          ${reasons.map(r => `<button type="button" class="amen-chip" data-reason="${esc(r)}">${esc(r)}</button>`).join('')}
+          ${reasons.map(r => `<button type="button" class="chip" data-reason="${esc(r)}">${esc(r)}</button>`).join('')}
         </div>
         <label class="sr-only" for="reject-note">${esc(t('adminReason'))}</label>
         <textarea class="control" id="reject-note" rows="3" placeholder="${esc(t('adminReasonPh'))}"></textarea>
       </div>`;
     $('#admin-modal-foot').innerHTML = `
       <button class="btn btn--ghost" type="button" data-admin-close>${esc(t('cancel'))}</button>
-      <button class="btn btn--danger" type="button" data-do-reject>${esc(t('adminReject'))}</button>`;
+      <div class="foot-gap"></div>
+      <button class="btn btn--danger" type="button" data-do-reject>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <span>${esc(t('adminReject'))}</span>
+      </button>`;
     openEditor();
 
     $('#admin-modal-body').querySelectorAll('[data-reason]').forEach(b => b.addEventListener('click', () => {
@@ -261,6 +292,7 @@
     const opt = (val, label, cur) => `<option value="${esc(val)}"${String(cur) === String(val) ? ' selected' : ''}>${esc(label)}</option>`;
 
     $('#admin-modal-body').innerHTML = `
+      ${timeline(p)}
       <div class="rev-grid">
         <div class="rev-preview">
           <div class="rev-gal" id="rev-gal">
@@ -286,6 +318,8 @@
         </div>
 
         <div class="rev-form">
+          <fieldset class="fset">
+          <legend><span>1</span><b>${esc(t('adminFieldTitle'))}</b></legend>
           <div class="field">
             <label for="rv-title">${esc(t('adminFieldTitle'))} <span class="req">*</span></label>
             <input class="control" id="rv-title" value="${esc(loc(p.title))}" />
@@ -354,6 +388,10 @@
             </div>
           </div>
 
+          </fieldset>
+
+          <fieldset class="fset">
+          <legend><span>2</span><b>${esc(t('photosLabel'))} · ${esc(t('amenitiesH'))}</b></legend>
           <div class="field">
             <label for="rv-desc">${esc(t('adminFieldDesc'))}</label>
             <textarea class="control" id="rv-desc" rows="3">${esc(loc(p.description))}</textarea>
@@ -376,6 +414,10 @@
             </label>
           </div>
 
+          </fieldset>
+
+          <fieldset class="fset">
+          <legend><span>3</span><b>${esc(t('adminFieldOwner'))}</b></legend>
           <div class="frow">
             <div class="field">
               <label for="rv-owner">${esc(t('adminFieldOwner'))}</label>
@@ -393,14 +435,25 @@
           </div>
 
           ${p.rejectReason ? `<div class="rev-note rev-note--err"><b>${esc(t('adminRejectedBecause'))}</b>${esc(p.rejectReason)}</div>` : ''}
+          </fieldset>
         </div>
       </div>`;
 
     $('#admin-modal-foot').innerHTML = `
-      <button class="btn btn--ghost btn--danger" type="button" data-foot-reject>${esc(t('adminReject'))}</button>
+      <button class="btn btn--ghost" type="button" data-foot-save>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        <span>${esc(t('adminSave'))}</span>
+      </button>
       <div class="foot-gap"></div>
-      <button class="btn btn--ghost" type="button" data-foot-save>${esc(t('adminSave'))}</button>
-      <button class="btn btn--ok" type="button" data-foot-accept>${esc(t('adminAcceptPublish'))}</button>`;
+      <span class="foot-hint">${esc(t('adminDecideHint'))}</span>
+      <button class="btn btn--danger" type="button" data-foot-reject>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <span>${esc(t('adminReject'))}</span>
+      </button>
+      <button class="btn btn--ok" type="button" data-foot-accept>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg>
+        <span>${esc(t('adminAcceptPublish'))}</span>
+      </button>`;
 
     openEditor();
     bindEditor(p);

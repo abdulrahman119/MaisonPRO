@@ -152,6 +152,14 @@
         ${esc(loc(d))}<b>${n}</b></button>`;
     }).join('');
 
+    /* marquee strip */
+    const mq = $('#marquee-track');
+    if (mq) {
+      const words = DISTRICTS.map(d => loc(d)).concat(TYPES.map(x => loc(x)));
+      const line = words.map(w => `<span>${esc(w)}</span>`).join('');
+      mq.innerHTML = line + line;
+    }
+
     /* amenity picker */
     const am = $('#amens');
     if (am) am.innerHTML = Object.keys(AMENITIES).map(k => {
@@ -211,6 +219,10 @@
             aria-pressed="${fav}" aria-label="${esc(fav ? t('toastFavRemove') : t('toastFavAdd'))}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21.2l7.8-7.8 1.1-1.1a5.5 5.5 0 0 0-.1-7.7Z"/></svg>
     </button>
+    <div class="card-price">
+      <div class="p">${esc(money(priceOf(p)).v)}<small>${esc(money(priceOf(p)).c)}</small></div>
+      <div class="s">${esc(unitLabel(p))}</div>
+    </div>
   </div>
   <div class="card-body">
     <span class="card-loc">
@@ -224,12 +236,8 @@
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M9 4v16M4 9h16"/></svg>${esc(t('cArea', { n: num(p.area) }))}</span>
     </div>
     <div class="card-foot">
-      <div class="price">
-        <div class="p">${esc(money(priceOf(p)).v)}<small>${esc(money(priceOf(p)).c)}</small></div>
-        <div class="s">${esc(unitLabel(p))}</div>
-      </div>
       <div class="card-cta">
-        <button class="btn btn--ghost" type="button" data-detail="${esc(p.id)}">
+        <button class="btn btn--navy" type="button" data-detail="${esc(p.id)}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
           <span>${esc(t('details'))}</span>
         </button>
@@ -284,6 +292,7 @@
 
     renderPills();
     syncUI();
+    observeReveals();
   }
 
   function renderPills() {
@@ -661,7 +670,7 @@
     const onScroll = () => {
       if (raf) return;
       raf = requestAnimationFrame(() => {
-        header.classList.toggle('is-stuck', window.scrollY > 4);
+        header.classList.toggle('is-solid', window.scrollY > 30 || document.body.classList.contains('is-admin'));
         raf = 0;
       });
     };
@@ -893,6 +902,56 @@
   }
 
 
+  /* ---------- effects: reveal + counters ---------- */
+  function observeReveals() {
+    const io = window.__mpReveal;
+    if (!io) return;
+    $$('.sec-head, .card, .bento-item, .step, .c-card, .cta-strip, .hero-media').forEach(el => {
+      if (el.classList.contains('reveal') || el.classList.contains('in')) return;
+      el.classList.add('reveal');
+      io.observe(el);
+    });
+    /* failsafe: nothing may stay hidden */
+    clearTimeout(window.__mpRevealT);
+    window.__mpRevealT = setTimeout(() => $$('.reveal').forEach(el => el.classList.add('in')), 1700);
+  }
+
+  function bindEffects() {
+    if ('IntersectionObserver' in window && !window.__mpReveal) {
+      window.__mpReveal = new IntersectionObserver(entries => {
+        entries.forEach(en => {
+          if (en.isIntersecting) { en.target.classList.add('in'); window.__mpReveal.unobserve(en.target); }
+        });
+      }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    }
+    observeReveals();
+
+    /* animated hero counters */
+    $$('[data-count-to]').forEach(el => {
+      const target = Number(el.dataset.countTo) || 0;
+      if (!target) return;
+      let started = false;
+      const run = () => {
+        if (started) return;
+        started = true;
+        const t0 = performance.now();
+        const tick = (now) => {
+          const k = Math.min(1, (now - t0) / 1100);
+          el.textContent = String(Math.round(target * (1 - Math.pow(1 - k, 3))));
+          if (k < 1) requestAnimationFrame(tick);
+          else el.textContent = String(target);
+        };
+        requestAnimationFrame(tick);
+      };
+      if ('IntersectionObserver' in window) {
+        const io2 = new IntersectionObserver(es => {
+          es.forEach(e2 => { if (e2.isIntersecting) { run(); io2.disconnect(); } });
+        }, { threshold: 0.4 });
+        io2.observe(el);
+      } else run();
+    });
+  }
+
   /* ---------- admin & tracker wiring ---------- */
   function closeTrack() {
     const m = $('#track-modal');
@@ -992,6 +1051,7 @@
     render();
     hydrateWa();
     bind();
+    bindEffects();
     bindAdminRoutes();
 
     try {
