@@ -20,6 +20,14 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230E7C86'/%3E%3Cpath d='M32 15 50 29v20H38V37h-12v12H14V29z' fill='%23fff'/%3E%3C/svg%3E" />
 <meta name="format-detection" content="telephone=no" />
 
+<link rel="alternate" hreflang="ar" href="https://abdulrahman119.github.io/MaisonPRO/?lang=ar" />
+<link rel="alternate" hreflang="fr" href="https://abdulrahman119.github.io/MaisonPRO/?lang=fr" />
+<link rel="alternate" hreflang="en" href="https://abdulrahman119.github.io/MaisonPRO/?lang=en" />
+<link rel="alternate" hreflang="x-default" href="https://abdulrahman119.github.io/MaisonPRO/" />
+<meta name="robots" content="index,follow,max-image-preview:large" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"MaisonPRO","url":"https://abdulrahman119.github.io/MaisonPRO/","inLanguage":["ar","fr","en"]}
+</script>
 <link rel="preload" href="assets/fonts/cairo-arabic-600-normal.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/fonts/cairo-arabic-800-normal.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="stylesheet" href="assets/css/styles.css" />
@@ -29,6 +37,7 @@
 </script>
 </head>
 <body>
+<span id="top"></span>
 
 <a class="skip" href="#main" data-i18n="skip">تجاوز إلى المحتوى</a>
 
@@ -107,6 +116,7 @@
       <a href="#services"><span data-i18n="navServices">خدماتنا</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></a>
       <a href="#add-property"><span data-i18n="navAdd">أضف عقارك</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></a>
       <a href="#contact"><span data-i18n="navContact">اتصل بنا</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></a>
+      <a href="#admin"><span data-i18n="navAdmin">الإدارة</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></a>
     </nav>
 
     <div class="drawer-lang">
@@ -294,6 +304,7 @@
         <div class="cur-toggle" role="group" aria-label="العملة" data-i18n-aria="currency">
           <button type="button" data-cur="DJF" aria-pressed="true">DJF</button>
           <button type="button" data-cur="USD" aria-pressed="false">USD</button>
+          <button type="button" data-cur="EUR" aria-pressed="false">EUR</button>
         </div>
         <button type="button" class="fav-btn" id="fav-toggle" aria-pressed="false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21.2l7.8-7.8 1.1-1.1a5.5 5.5 0 0 0-.1-7.7Z"/></svg>
@@ -555,11 +566,17 @@
           <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg></div>
           <h3 data-i18n="successTitle">تم استلام عقارك</h3>
           <p data-i18n="successSub">سيتواصل معك فريقنا خلال 24 ساعة لمعاينة العقار ونشره.</p>
+          <div class="success-ref">
+            <span data-i18n="successRef">رقم طلبك</span>
+            <b id="success-ref" dir="ltr">—</b>
+            <span class="success-status" data-i18n="successPending">بانتظار المراجعة</span>
+          </div>
           <div class="row">
             <a class="btn btn--wa js-wa" href="#" data-wa="success">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.89 9.89-9.89 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.89-9.88 9.89m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.94L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9a11.82 11.82 0 0 0-3.48-8.41Z"/></svg>
               <span data-i18n="followWa">متابعة على واتساب</span>
             </a>
+            <button type="button" class="btn btn--ghost" id="track-open" data-i18n="trackLink">تابع حالة طلبك</button>
             <button type="button" class="btn btn--ghost" id="add-another" data-i18n="addAnother">إضافة عقار آخر</button>
           </div>
         </div>
@@ -667,6 +684,8 @@
           <li><a href="#services" data-i18n="navServices">خدماتنا</a></li>
           <li><a href="#add-property" data-i18n="navAdd">أضف عقارك</a></li>
           <li><a href="#contact" data-i18n="navContact">اتصل بنا</a></li>
+          <li><a href="#" id="track-open-2" data-i18n="trackLink">تابع حالة طلبك</a></li>
+          <li><a href="#admin" id="admin-link" class="admin-entry" data-i18n="navAdmin">الإدارة</a></li>
         </ul>
       </div>
 
@@ -734,6 +753,117 @@
   </div>
 </div>
 
+<!-- ================= ADMIN / MODERATION ================= -->
+<section class="admin" id="admin" hidden aria-labelledby="admin-title">
+  <div class="wrap">
+
+    <!-- ---------- login ---------- -->
+    <div class="admin-login" id="admin-login">
+      <div class="admin-login-card">
+        <span class="admin-lock" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 15v2"/></svg>
+        </span>
+        <h2 id="admin-title" data-i18n="adminTitle">لوحة إدارة الطلبات</h2>
+        <p data-i18n="adminLoginSub">أدخل رمز الدخول لمراجعة العقارات المرسلة وقبولها أو رفضها أو تعديلها.</p>
+
+        <form class="admin-login-form" id="admin-login-form" novalidate>
+          <label class="sr-only" for="admin-code" data-i18n="adminCode">رمز الدخول</label>
+          <input class="control" id="admin-code" type="password" inputmode="numeric" autocomplete="current-password"
+                 placeholder="····" maxlength="12" data-i18n-placeholder="adminCodePh" />
+          <button class="btn" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5M15 12H3"/></svg>
+            <span data-i18n="adminEnter">دخول</span>
+          </button>
+        </form>
+        <p class="admin-hint" id="admin-hint" data-i18n="adminDemoHint">الرمز التجريبي: 2530 — يمكن تغييره من الإعدادات بعد الدخول.</p>
+      </div>
+    </div>
+
+    <!-- ---------- panel ---------- -->
+    <div class="admin-panel" id="admin-panel" hidden>
+
+      <header class="admin-head">
+        <div>
+          <span class="eyebrow" data-i18n="adminEyebrow">الإدارة</span>
+          <h2 class="sec-title" data-i18n="adminTitle2">طلبات العقارات</h2>
+        </div>
+        <div class="admin-head-actions">
+          <button class="btn btn--ghost btn--sm" type="button" id="admin-settings-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.6-1H2.8a2 2 0 1 1 0-4H3a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V2.8a2 2 0 1 1 4 0V3a1.7 1.7 0 0 0 1.1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1h.2a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+            <span data-i18n="adminSettings">الإعدادات</span>
+          </button>
+          <button class="icon-btn" type="button" id="admin-logout" aria-label="خروج" data-i18n-aria="adminLogout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="admin-stats" id="admin-stats"></div>
+
+      <div class="admin-tabs" role="tablist" id="admin-tabs">
+        <button type="button" role="tab" data-tab="pending" aria-selected="true">
+          <span data-i18n="adminTabPending">بانتظار المراجعة</span> <b id="tab-pending">0</b>
+        </button>
+        <button type="button" role="tab" data-tab="published" aria-selected="false">
+          <span data-i18n="adminTabPublished">منشورة</span> <b id="tab-published">0</b>
+        </button>
+        <button type="button" role="tab" data-tab="rejected" aria-selected="false">
+          <span data-i18n="adminTabRejected">مرفوضة</span> <b id="tab-rejected">0</b>
+        </button>
+      </div>
+
+      <div class="admin-list" id="admin-list"></div>
+      <div class="admin-empty" id="admin-empty" hidden>
+        <div class="empty-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        <h3 data-i18n="adminEmptyTitle">لا يوجد شيء هنا</h3>
+        <p data-i18n="adminEmptyText">كل الطلبات في هذه القائمة تمت معالجتها.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ADMIN EDITOR ================= -->
+<div class="modal admin-modal" id="admin-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="admin-modal-title">
+  <div class="modal-bg" data-admin-close></div>
+  <div class="modal-box admin-modal-box">
+    <header class="admin-modal-head">
+      <div>
+        <span class="admin-modal-id" id="admin-modal-id" dir="ltr"></span>
+        <h3 id="admin-modal-title" data-i18n="adminReview">مراجعة العقار</h3>
+      </div>
+      <button class="icon-btn" type="button" data-admin-close aria-label="إغلاق" data-i18n-aria="close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+
+    <div class="modal-scroll admin-modal-body" id="admin-modal-body"></div>
+
+    <footer class="admin-modal-foot" id="admin-modal-foot"></footer>
+  </div>
+</div>
+
+<!-- ================= STATUS TRACKER (visitor) ================= -->
+<div class="modal" id="track-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="track-title">
+  <div class="modal-bg" data-track-close></div>
+  <div class="modal-box track-box">
+    <button class="modal-x" type="button" data-track-close aria-label="إغلاق" data-i18n-aria="close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="track-in">
+      <h3 id="track-title" data-i18n="trackTitle">تابع حالة طلبك</h3>
+      <p data-i18n="trackSub">أدخل رقم الإعلان الذي ظهر لك بعد الإرسال (مثال MP-2001).</p>
+      <form class="track-form" id="track-form">
+        <input class="control" id="track-code" placeholder="MP-2001" dir="ltr" autocomplete="off" aria-label="رقم الإعلان" />
+        <button class="btn" type="submit" data-i18n="trackBtn">تحقق</button>
+      </form>
+      <div id="track-result" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+
 <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
 
 <noscript>
@@ -744,6 +874,8 @@
 
 <script src="assets/js/data.js" defer></script>
 <script src="assets/js/i18n.js" defer></script>
+<script src="assets/js/store.js" defer></script>
 <script src="assets/js/app.js" defer></script>
+<script src="assets/js/admin.js" defer></script>
 </body>
 </html>

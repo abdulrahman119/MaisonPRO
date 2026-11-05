@@ -14,6 +14,7 @@ const SITE_CONFIG = {
   addressFr: 'Boulevard Bourguiba, Centre-ville, Djibouti',
   mapsUrl: 'https://maps.google.com/?q=Djibouti+Centre+ville',
   djfPerUsd: 177.721,
+  djfPerEur: 192.5,
   maxImages: 6,
   pageSize: 6
 };
