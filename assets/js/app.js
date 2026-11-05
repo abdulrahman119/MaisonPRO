@@ -8,9 +8,10 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const RATE = CFG.djfPerUsd || 177.721;
+  const RATE_EUR = CFG.djfPerEur || 192.5;
   const nf = new Intl.NumberFormat('en-US');
-  const KEY_SUB = 'mp:subs:v2';
   const KEY_FAV = 'mp:favs:v2';
+  const ST = window.MPStore;
 
   /* ---------- helpers ---------- */
   const esc = (v) => String(v == null ? '' : v)
@@ -47,12 +48,14 @@
     return S.cur === 'USD' ? '$' + num(n / RATE) : num(n) + ' DJF';
   }
   function money(n) {
-    return S.cur === 'USD'
-      ? { v: '$' + nf.format(Math.round(n / RATE)), c: '' }
-      : { v: num(n), c: 'DJF' };
+    if (S.cur === 'USD') return { v: '$' + nf.format(Math.round(n / RATE)), c: '' };
+    if (S.cur === 'EUR') return { v: '\u20ac' + nf.format(Math.round(n / RATE_EUR)), c: '' };
+    return { v: num(n), c: 'DJF' };
   }
   function alt(n) {
-    return S.cur === 'USD' ? num(n) + ' DJF' : '$' + num(n / RATE);
+    if (S.cur === 'USD') return '\u20ac' + nf.format(Math.round(n / RATE_EUR)) + ' \u00b7 ' + num(n) + ' DJF';
+    if (S.cur === 'EUR') return '$' + nf.format(Math.round(n / RATE)) + ' \u00b7 ' + num(n) + ' DJF';
+    return '$' + nf.format(Math.round(n / RATE)) + ' \u00b7 \u20ac' + nf.format(Math.round(n / RATE_EUR));
   }
   function unitLabel(p) {
     if (p.deal === 'rent') return t('perMonth');
@@ -131,7 +134,7 @@
     if (sel) {
       const cur = S.budget;
       sel.innerHTML = `<option value="0">${esc(t('budgetAll'))}</option>`
-        + presets.map(v => `<option value="${v}">≤ ${esc(S.cur === 'USD' ? '$' + num(v / RATE) : num(v) + ' DJF')}</option>`).join('');
+        + presets.map(v => `<option value="${v}">\u2264 ${esc(money(v).c ? num(v) + ' DJF' : money(v).v)}</option>`).join('');
       sel.value = String(cur);
       if (!sel.value) sel.value = '0';
     }
@@ -588,16 +591,22 @@
       submitted: true
     };
 
-    const subs = store.get(KEY_SUB, []);
-    subs.unshift(p);
-    store.set(KEY_SUB, subs.slice(0, 16));
+    p.status = 'pending';
+    p.source = 'visitor';
+    p.createdAt = new Date().toISOString();
+    p.updatedAt = null;
+    p.adminNotes = '';
+    p.rejectReason = '';
 
-    LIST.unshift(p);
+    if (ST) ST.upsert(p);
     fillOptions();
     render();
 
     $('#add-form').style.display = 'none';
     $('#success').classList.add('is-on');
+    const refEl = $('#success-ref');
+    if (refEl) refEl.textContent = p.id;
+    if (window.MPAdmin) MPAdmin.render();
     toast(t('toastSent'), 'ok');
 
     const msg = [
@@ -728,6 +737,8 @@
     /* toolbar */
     $$('[data-cur]').forEach(b => b.addEventListener('click', () => {
       S.cur = b.dataset.cur;
+      try { localStorage.setItem('mp:cur', S.cur); } catch (e) {}
+      document.documentElement.dataset.currency = S.cur;
       fillOptions();
       render();
       if (openId) { const p = find(openId); if (p) renderDetail(p); }
@@ -881,19 +892,107 @@
     });
   }
 
-  /* ---------- boot ---------- */
-  function init() {
-    const subs = store.get(KEY_SUB, []);
-    LIST = (Array.isArray(subs) ? subs : []).concat(window.PROPERTIES || []);
 
-    let lang = 'ar';
-    try { lang = localStorage.getItem('mp:lang') || 'ar'; } catch (e) {}
+  /* ---------- admin & tracker wiring ---------- */
+  function closeTrack() {
+    const m = $('#track-modal');
+    if (!m) return;
+    m.classList.remove('is-open');
+    m.setAttribute('aria-hidden', 'true');
+    if (!$('#modal').classList.contains('is-open') && !$('#admin-modal').classList.contains('is-open')) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  function showAdmin(on) {
+    const sec = $('#admin');
+    if (!sec) return;
+    if (on) closeTrack();
+    sec.hidden = !on;
+    document.body.classList.toggle('is-admin', !!on);
+    if (on) {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (window.MPAdmin) MPAdmin.render();
+    }
+  }
+
+  function bindAdminRoutes() {
+    $$('a[href="#admin"]').forEach(a => a.addEventListener('click', e => {
+      e.preventDefault();
+      closeDrawer();
+      if (location.hash !== '#admin') history.pushState({}, '', '#admin');
+      showAdmin(true);
+    }));
+
+    const sync = () => showAdmin(location.hash === '#admin');
+    window.addEventListener('hashchange', sync);
+    if (location.hash === '#admin') showAdmin(true);
+
+    const openTrack = e => {
+      if (e) e.preventDefault();
+      const m = $('#track-modal');
+      m.classList.add('is-open');
+      m.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => { const i = $('#track-code'); if (i) i.focus(); }, 120);
+    };
+    ['#track-open', '#track-open-2'].forEach(sel => {
+      const b = $(sel);
+      if (b) b.addEventListener('click', openTrack);
+    });
+
+    document.addEventListener('mp:close-track', closeTrack);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && $('#track-modal').classList.contains('is-open')) closeTrack();
+    });
+  }
+
+  /* called by the admin panel after any moderation change */
+  window.MPApp = {
+    refresh() {
+      loadListings();
+      fillOptions();
+      render();
+      hydrateWa();
+      if (openId) {
+        const p = find(openId);
+        if (p) renderDetail(p); else closeDetail();
+      }
+    }
+  };
+
+  /* ---------- boot ---------- */
+  function loadListings() {
+    const all = ST ? ST.list() : (window.PROPERTIES || []);
+    LIST = all.filter(p => (p.status || 'published') === 'published');
+  }
+
+  function init() {
+    loadListings();
+
+    /* a fresh load must never inherit an open overlay */
+    ['#track-modal', '#admin-modal', '#modal'].forEach(sel => {
+      const m = $(sel);
+      if (m) { m.classList.remove('is-open'); m.setAttribute('aria-hidden', 'true'); }
+    });
+    document.body.style.overflow = '';
+
+    /* ?lang= wins (shareable links), then the saved choice, then the browser */
+    let lang = null;
+    try { lang = new URL(location.href).searchParams.get('lang'); } catch (e) {}
+    if (!lang || ['ar', 'fr', 'en'].indexOf(lang) < 0) {
+      try { lang = (window.detectLang && detectLang()) || 'ar'; } catch (e) { lang = 'ar'; }
+    }
     applyLang(lang);
+
+    try { S.cur = localStorage.getItem('mp:cur') || 'DJF'; } catch (e) {}
+    document.documentElement.dataset.currency = S.cur;
 
     fillOptions();
     render();
     hydrateWa();
     bind();
+    bindAdminRoutes();
 
     try {
       const pid = new URL(location.href).searchParams.get('property');
