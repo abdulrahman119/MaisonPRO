@@ -182,6 +182,7 @@
       <span>${esc(dealWord(p.deal))}</span>
       <span>${esc(num(shownPrice(p)))} DJF ${esc(unitWord(p.deal))}</span>
       <span>${num(p.views || 0)} ${esc(t('ownViews'))}</span>
+      ${p.publisher && p.publisher.email ? `<span class="ar-pub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>${esc(t('pubTag'))} · ${esc(p.publisher.email)}</span>` : ''}
     </div>
     <div class="ar-owner">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
@@ -351,6 +352,7 @@
           <p class="rev-desc">${esc(loc(p.description) || t('noDescription'))}</p>
           ${p.amenities && p.amenities.length ? `<div class="amen-list">${p.amenities.map(a => `<span class="amen">${esc(amenityName(a))}</span>`).join('')}</div>` : ''}
           ${p.adminNotes ? `<div class="rev-note"><b>${esc(t('adminNotes'))}</b>${esc(p.adminNotes)}</div>` : ''}
+          ${p.publisher && p.publisher.email ? `<div class="rev-note"><b>${esc(t('pubTag'))}</b>${esc(p.publisher.name || '')} · ${esc(p.publisher.email)}</div>` : ''}
         </div>
 
         <div class="rev-form">

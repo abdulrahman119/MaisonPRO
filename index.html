@@ -337,7 +337,53 @@
         <p data-i18n="formSub">كل الحقول المعلّمة * مطلوبة</p>
       </div>
 
-      <form id="add-form" action="#add-property" method="get" novalidate>
+      <div class="pub-bar" id="pub-bar" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+        <span class="pub-who"><b data-i18n="pubLogged">مسجّل كـ</b> <strong id="pg-user"></strong></span>
+        <span class="pub-mail" id="pg-mail" dir="ltr"></span>
+        <button class="btn btn--link btn--sm" id="pg-logout" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+          <span data-i18n="pubLogout">تسجيل الخروج</span>
+        </button>
+      </div>
+
+      <div class="pub-gate" id="pub-gate">
+        <div class="pg-tabs" role="tablist" aria-label="حساب الناشر">
+          <button type="button" class="pg-tab is-on" data-pg="login"><span data-i18n="pubLogin">تسجيل الدخول</span></button>
+          <button type="button" class="pg-tab" data-pg="register"><span data-i18n="pubRegister">حساب جديد</span></button>
+        </div>
+        <p class="pg-sub" data-i18n="pubSub">يلزم تسجيل الدخول لنشر إعلان. هويتك مرتبطة بإعلانك ولا تظهر إلا لإدارة الموقع.</p>
+        <div class="frow">
+          <div class="field">
+            <label for="pg-email" data-i18n="pubEmail">البريد الإلكتروني *</label>
+            <input class="control" id="pg-email" type="email" dir="ltr" autocomplete="email" placeholder="you@example.com" data-i18n-placeholder="cfEmailPh" />
+          </div>
+          <div class="field">
+            <label for="pg-pw" data-i18n="pubPw">كلمة المرور *</label>
+            <input class="control" id="pg-pw" type="password" dir="ltr" autocomplete="current-password" placeholder="••••••••" />
+          </div>
+        </div>
+        <div class="frow" id="pg-reg-row" hidden>
+          <div class="field">
+            <label for="pg-name" data-i18n="pubName">الاسم الكامل</label>
+            <input class="control" id="pg-name" type="text" autocomplete="name" placeholder="أحمد عبدالله" data-i18n-placeholder="phName" />
+          </div>
+          <div class="field">
+            <label for="pg-pw2" data-i18n="pubPw2">تأكيد كلمة المرور *</label>
+            <input class="control" id="pg-pw2" type="password" dir="ltr" autocomplete="new-password" placeholder="••••••••" />
+          </div>
+        </div>
+        <p class="pg-err" id="pg-err" role="alert" hidden></p>
+        <button class="btn btn--primary btn--block" id="pg-submit" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5M15 12H3"/></svg>
+          <span id="pg-submit-txt" data-i18n="pubLogin">تسجيل الدخول</span>
+        </button>
+        <div class="pg-or"><span data-i18n="pubOr">أو</span></div>
+        <div class="gbtn" id="gbtn" hidden></div>
+        <p class="pg-hint" id="pg-hint" data-i18n="pubGoogleOff">تسجيل الدخول بجوجل غير مفعّل حتى الآن — يُفعَّل من إعدادات الموقع.</p>
+      </div>
+
+      <form id="add-form" action="#add-property" method="get" novalidate hidden>
         <fieldset class="fset">
           <legend><span>1</span><b data-i18n="ownerName">اسم المالك *</b></legend>
           <div class="frow">

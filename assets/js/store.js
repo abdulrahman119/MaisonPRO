@@ -17,6 +17,8 @@
   const K_SET = 'mp:settings:v1';
   const K_SESS = 'mp:admin:v1';
   const K_MSGS = 'mp:msgs:v1';
+  const K_USERS = 'mp:users:v1';
+  const K_PSESS = 'mp:psess:v1';
 
   /* default moderation code — changeable from the admin panel */
   const DEFAULT_ADMIN_CODE = '2530';
@@ -153,6 +155,81 @@
     save(all);
   }
 
+  /* ---------- publisher accounts ---------- */
+  async function hashPw(pw) {
+    try {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('mp$' + pw));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      let h = 5381;
+      const str = 'mp$' + pw;
+      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+      return 'f' + (h >>> 0).toString(16);
+    }
+  }
+  const users = () => read(K_USERS, []);
+  const pubUser = (u) => ({ id: u.id, name: u.name, email: u.email, google: !!u.google });
+
+  async function register(name, email, password) {
+    const mail = String(email || '').trim().toLowerCase();
+    const pw = String(password || '');
+    if (!mail || pw.length < 4) return { err: 'need' };
+    const all = users();
+    if (all.some(u => u.email === mail)) return { err: 'exists' };
+    const item = {
+      id: 'USR-' + String(1000 + all.length + 1),
+      name: String(name || '').trim() || mail.split('@')[0],
+      email: mail,
+      pw: await hashPw(pw),
+      google: false,
+      createdAt: new Date().toISOString()
+    };
+    all.push(item);
+    write(K_USERS, all);
+    write(K_PSESS, item.id);
+    return { user: pubUser(item) };
+  }
+
+  async function login(email, password) {
+    const mail = String(email || '').trim().toLowerCase();
+    const u = users().find(x => x.email === mail && x.pw);
+    if (!u || u.pw !== (await hashPw(String(password || '')))) return { err: 'bad' };
+    write(K_PSESS, u.id);
+    return { user: pubUser(u) };
+  }
+
+  function loginGoogle(profile) {
+    const mail = String((profile && profile.email) || '').trim().toLowerCase();
+    if (!mail) return { err: 'bad' };
+    const all = users();
+    let u = all.find(x => x.email === mail);
+    if (!u) {
+      u = {
+        id: 'USR-' + String(1000 + all.length + 1),
+        name: (profile.name || mail.split('@')[0]).trim(),
+        email: mail,
+        pw: '',
+        google: true,
+        createdAt: new Date().toISOString()
+      };
+      all.push(u);
+      write(K_USERS, all);
+    } else if (!u.google) {
+      u.google = true;
+      write(K_USERS, all);
+    }
+    write(K_PSESS, u.id);
+    return { user: pubUser(u) };
+  }
+
+  function pUser() {
+    const id = read(K_PSESS, null);
+    if (!id) return null;
+    const u = users().find(x => x.id === id);
+    return u ? pubUser(u) : null;
+  }
+  function pLogout() { write(K_PSESS, null); }
+
   /* ---------- admin session ---------- */
   const isAdmin = () => read(K_SESS, false) === true;
   const setAdmin = (on) => write(K_SESS, !!on);
@@ -164,6 +241,7 @@
     list, find, upsert, save, transition, remove, resetDemo,
     favs, setFavs,
     msgs, addMsg, delMsg, bumpViews, isAdmin, setAdmin, checkCode,
+    register, login, loginGoogle, pUser, pLogout,
     settings, saveSettings,
     STATUS: { pending: 'pending', published: 'published', rejected: 'rejected' }
   };

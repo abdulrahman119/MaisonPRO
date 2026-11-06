@@ -118,6 +118,34 @@ input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0
   background:var(--coral);color:#fff;font-size:.68rem;border-radius:10px;display:grid;place-items:center;padding:0 5px;
 }
 
+
+/* ---------- publisher gate ---------- */
+.pub-bar{
+  display:flex;align-items:center;gap:11px;flex-wrap:wrap;
+  background:var(--coral-soft,#FFEDEA);border:1px solid rgba(242,84,75,.25);
+  border-radius:var(--r-2,14px);padding:11px 16px;margin-bottom:18px;
+}
+.pub-bar>svg{width:19px;height:19px;color:var(--coral-dark,#D63F37);flex:none}
+.pub-who{font-size:.92rem;color:var(--ink)}
+.pub-who b{font-weight:600;color:var(--ink-3)}
+.pub-mail{font-size:.82rem;color:var(--ink-3);background:#fff;border-radius:999px;padding:3px 11px;border:1px solid var(--line)}
+.pub-bar .btn{margin-inline-start:auto}
+
+.pub-gate{border:1.5px solid var(--line);border-radius:var(--r-3,18px);padding:22px;background:#fff}
+.pg-tabs{display:inline-flex;gap:4px;background:var(--soft);border-radius:999px;padding:4px;margin-bottom:13px}
+.pg-tab{border:0;background:transparent;padding:9px 20px;border-radius:999px;font-weight:700;font-size:.9rem;color:var(--ink-2);cursor:pointer;transition:all .15s}
+.pg-tab.is-on{background:var(--ink);color:#fff}
+.pg-sub{font-size:.88rem;color:var(--ink-3);line-height:1.8;margin-bottom:16px}
+.pg-err{
+  background:#FDECEC;border:1px solid rgba(220,38,38,.25);color:#B91C1C;
+  border-radius:12px;padding:10px 14px;font-size:.86rem;font-weight:600;margin-bottom:13px;
+}
+.pg-or{display:flex;align-items:center;gap:12px;margin:15px 0;color:var(--ink-3);font-size:.82rem;font-weight:700}
+.pg-or::before,.pg-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.pg-hint{margin-top:11px;font-size:.82rem;color:var(--ink-3);text-align:center;line-height:1.7}
+.gbtn{display:flex;justify-content:center;min-height:44px}
+.gbtn iframe{border-radius:999px!important}
+
 /* ---------- forms ---------- */
 .control{
   width:100%;height:50px;padding:0 15px;border:1.5px solid var(--line-2);

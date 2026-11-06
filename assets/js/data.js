@@ -6,6 +6,7 @@
 
 const SITE_CONFIG = {
   brand: 'MaisonPRO',
+  googleClientId: '',               // ← ضع هنا Client ID من Google Cloud لتفعيل «المتابعة بجوجل»
   phone: '25321351234',             // ← الرقم بالصيغة الدولية بدون + ولا مسافات
   phoneDisplay: '+253 21 35 12 34',
   phone: '+253 21 35 12 34',

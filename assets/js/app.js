@@ -563,6 +563,13 @@
 
   function submit(e) {
     e.preventDefault();
+    const me = ST ? ST.pUser() : null;
+    if (!me) {
+      const gate = $('#pub-gate');
+      if (gate) gate.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast(t('pubSub'), 'err');
+      return;
+    }
     if (!validate()) { toast(t('toastFix'), 'err'); return; }
 
     const deal = $('#o-deal').value;
@@ -584,6 +591,7 @@
       images: photos.length ? photos.slice(0, 4) : ['villa-2'],
       amenities: [...selectedAmens],
       owner: { name: $('#o-name').value.trim(), phone: $('#o-phone').value.replace(/\D/g, '') },
+      publisher: { id: me.id, name: me.name, email: me.email },
       submitted: true
     };
 
@@ -618,6 +626,7 @@
     $('#add-form').style.display = '';
     $('#success').classList.remove('is-on');
     $('#o-price-usd').value = '';
+    prefillOwner();
   }
 
   /* ---------- modal / drawer helpers ---------- */
@@ -865,6 +874,7 @@
 
     /* re-render on language change */
     document.addEventListener('langchange', () => {
+    pgLabel();
       fillOptions();
       render();
       renderThumbs();
@@ -876,6 +886,127 @@
     });
   }
 
+
+  /* ---------- publisher auth ---------- */
+  let pgMode = 'login';
+
+  function pgError(msg) {
+    const el = $('#pg-err');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.hidden = !msg;
+  }
+
+  function prefillOwner() {
+    const user = ST ? ST.pUser() : null;
+    if (!user) return;
+    const n = $('#o-name');
+    if (n && !n.value.trim()) n.value = user.name;
+  }
+
+  function refreshAuth() {
+    const user = ST ? ST.pUser() : null;
+    const gate = $('#pub-gate');
+    const form = $('#add-form');
+    const bar = $('#pub-bar');
+    if (!gate || !form) return;
+    gate.hidden = !!user;
+    if (bar) bar.hidden = !user;
+    form.hidden = !user;
+    form.style.display = '';
+    const succ = $('#success');
+    if (succ) succ.classList.remove('is-on');
+    if (user) {
+      const un = $('#pg-user'); if (un) un.textContent = user.name;
+      const um = $('#pg-mail'); if (um) um.textContent = user.email;
+      prefillOwner();
+    }
+  }
+
+  function pgLabel() {
+    const txt = $('#pg-submit-txt');
+    if (txt) txt.textContent = t(pgMode === 'register' ? 'pubCreate' : 'pubLogin');
+  }
+
+  function bindAuth() {
+    $$('[data-pg]').forEach(b => b.addEventListener('click', () => {
+      pgMode = b.dataset.pg;
+      $$('[data-pg]').forEach(x => x.classList.toggle('is-on', x === b));
+      const row = $('#pg-reg-row');
+      if (row) row.hidden = pgMode !== 'register';
+      pgLabel();
+      pgError('');
+    }));
+
+    const go = $('#pg-submit');
+    if (go) go.addEventListener('click', async () => {
+      pgError('');
+      const email = ($('#pg-email').value || '').trim();
+      const pw = $('#pg-pw').value || '';
+      if (!ST) return;
+      if (pgMode === 'register') {
+        const pw2 = $('#pg-pw2').value || '';
+        if (pw !== pw2) { pgError(t('pubErrMatch')); return; }
+        const r = await ST.register(($('#pg-name').value || '').trim(), email, pw);
+        if (r.err) { pgError(t(r.err === 'exists' ? 'pubErrExists' : 'pubErrNeed')); return; }
+        toast(t('pubOk'), 'ok');
+      } else {
+        const r = await ST.login(email, pw);
+        if (r.err) { pgError(t('pubErrBad')); return; }
+        toast(t('pubOk'), 'ok');
+      }
+      refreshAuth();
+      const sec = $('#add-property');
+      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    const out = $('#pg-logout');
+    if (out) out.addEventListener('click', () => {
+      if (ST) ST.pLogout();
+      refreshAuth();
+      toast(t('pubLogout'), 'info');
+    });
+  }
+
+  function initGoogle() {
+    const btn = $('#gbtn');
+    const hint = $('#pg-hint');
+    const cid = (window.SITE_CONFIG && SITE_CONFIG.googleClientId) || '';
+    if (!btn) return;
+    if (!cid) return; /* leave the hint visible, button hidden */
+    const boot = () => {
+      if (!window.google || !google.accounts || !google.accounts.id) return;
+      google.accounts.id.initialize({
+        client_id: cid,
+        callback: (res) => {
+          try {
+            const part = res.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(part));
+            const r = ST ? ST.loginGoogle({ email: payload.email, name: payload.name }) : null;
+            if (r && r.user) {
+              refreshAuth();
+              toast(t('pubOk'), 'ok');
+              pgError('');
+            }
+          } catch (err) { /* malformed token — ignore */ }
+        }
+      });
+      btn.hidden = false;
+      if (hint) hint.hidden = true;
+      google.accounts.id.renderButton(btn, {
+        theme: 'outline', size: 'large', width: 320, text: 'continue_with', shape: 'pill'
+      });
+    };
+    if (window.google && google.accounts) boot();
+    else {
+      const sc = document.createElement('script');
+      sc.src = 'https://accounts.google.com/gsi/client';
+      sc.async = true;
+      sc.defer = true;
+      sc.onload = boot;
+      document.head.appendChild(sc);
+    }
+  }
 
   /* ---------- contact form ---------- */
   function openContactWithRef(id) {
@@ -1078,6 +1209,9 @@
     render();
     bind();
     bindContactForm();
+    bindAuth();
+    refreshAuth();
+    initGoogle();
     bindEffects();
     bindAdminRoutes();
 
