@@ -173,10 +173,12 @@
 
       <div class="search-extra" id="search-extra" hidden>
         <div class="sb-field">
-          <label for="f-budget" data-i18n="budget">الميزانية</label>
-          <select class="control" id="f-budget">
-            <option value="0" data-i18n="budgetAll">بدون حد</option>
-          </select>
+          <label for="f-min" data-i18n="fMin">من السعر (DJF)</label>
+          <input class="control" id="f-min" type="number" min="0" step="10000" inputmode="numeric" placeholder="0" />
+        </div>
+        <div class="sb-field">
+          <label for="f-max" data-i18n="fMax">إلى السعر (DJF)</label>
+          <input class="control" id="f-max" type="number" min="0" step="10000" inputmode="numeric" placeholder="∞" />
         </div>
         <div class="sb-field">
           <label for="f-beds" data-i18n="roomsLabel">عدد الغرف</label>
@@ -187,6 +189,19 @@
             <option value="3">3+</option>
             <option value="4">4+</option>
           </select>
+        </div>
+        <div class="sb-field">
+          <label for="f-baths" data-i18n="fBaths">عدد الحمامات</label>
+          <select class="control" id="f-baths">
+            <option value="0" data-i18n="roomsAll">الكل</option>
+            <option value="1">1+</option>
+            <option value="2">2+</option>
+            <option value="3">3+</option>
+          </select>
+        </div>
+        <div class="sb-field sb-field--full">
+          <label data-i18n="fAmen">المميزات</label>
+          <div class="amen-filter" id="f-amens"></div>
         </div>
       </div>
 
@@ -729,6 +744,20 @@
   </div>
 </nav>
 
+<!-- ================= COMPARE BAR ================= -->
+<div class="cmp-bar" id="cmp-bar" hidden>
+  <div class="cmp-bar-in">
+    <div class="cmp-thumbs" id="cmp-thumbs"></div>
+    <button class="btn btn--primary" id="cmp-go" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M5 8v8l7 5 7-5V8"/></svg>
+      <span id="cmp-go-txt" data-i18n="cmpGo">قارن</span>
+    </button>
+    <button class="btn btn--link" id="cmp-clear" type="button">
+      <span data-i18n="cmpClear">مسح</span>
+    </button>
+  </div>
+</div>
+
 <!-- ================= DETAIL MODAL ================= -->
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
   <div class="modal-bg" data-close></div>
@@ -903,6 +932,20 @@
   </div>
 </div>
 
+
+<!-- ================= COMPARE MODAL ================= -->
+<div class="modal" id="cmp-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="cmp-title">
+  <div class="modal-bg" data-cmp-close></div>
+  <div class="modal-box cmp-box">
+    <button class="modal-x" type="button" data-cmp-close aria-label="إغلاق" data-i18n-aria="close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="cmp-in">
+      <h3 id="cmp-title" data-i18n="cmpTitle">مقارنة العقارات</h3>
+      <div class="cmp-scroll" id="cmp-body"></div>
+    </div>
+  </div>
+</div>
 
 <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
 

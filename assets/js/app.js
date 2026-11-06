@@ -28,12 +28,16 @@
   /* ---------- state ---------- */
   const S = {
     deal: 'all', type: 'all', district: 'all',
-    budget: 0, beds: 0, q: '', sort: 'newest',
+    min: 0, max: 0, beds: 0, baths: 0, amens: [],
+    q: '', sort: 'newest',
     cur: 'DJF', favsOnly: false, shown: CFG.pageSize || 6
   };
 
   let LIST = [];
   let FAVS = store.get(KEY_FAV, []);
+  const KEY_CMP = 'mp:cmp:v1';
+  let CMP = store.get(KEY_CMP, []).filter(id => LIST.some(x => x.id === id)).slice(0, 3);
+  let mapEmbedUrl = '';
   let lastFocus = null;
   let openId = null;
   let galIdx = 0;
@@ -102,19 +106,11 @@
     fill($('#o-type'), TYPES.map(x => ({ value: x.id, label: loc(x) })), null, null, null);
     fill($('#o-district'), DISTRICTS.map(d => ({ value: d.id, label: loc(d) })), null, null, null);
 
-    /* budget presets adapt to the deal type */
-    const presets = S.deal === 'sale'
-      ? [20000000, 40000000, 60000000, 80000000]
-      : S.deal === 'daily'
-        ? [8000, 15000, 25000, 40000]
-        : [150000, 300000, 500000, 800000];
-    const sel = $('#f-budget');
-    if (sel) {
-      const cur = S.budget;
-      sel.innerHTML = `<option value="0">${esc(t('budgetAll'))}</option>`
-        + presets.map(v => `<option value="${v}">\u2264 ${esc(money(v).c ? num(v) + ' DJF' : money(v).v)}</option>`).join('');
-      sel.value = String(cur);
-      if (!sel.value) sel.value = '0';
+    /* amenity filter chips */
+    const fa = $('#f-amens');
+    if (fa) {
+      fa.innerHTML = Object.keys(AMENITIES || {}).map(a =>
+        `<button type="button" class="chip famen${S.amens.includes(a) ? ' is-on' : ''}" data-famen="${esc(a)}" aria-pressed="${S.amens.includes(a)}"><span>${esc(amenityName(a))}</span></button>`).join('');
     }
 
     /* footer types + areas */
@@ -162,9 +158,11 @@
     if (S.type !== 'all' && p.type !== S.type) return false;
     if (S.district !== 'all' && p.district !== S.district) return false;
     if (S.beds && (p.rooms || 0) < S.beds) return false;
-    if (S.budget) {
-      if ((S.deal === 'daily' ? (p.nightly || p.price) : p.price) > S.budget) return false;
-    }
+    if (S.baths && (p.baths || 0) < S.baths) return false;
+    const pr = S.deal === 'daily' ? (p.nightly || p.price) : p.price;
+    if (S.min && pr < S.min) return false;
+    if (S.max && pr > S.max) return false;
+    if (S.amens.length && !S.amens.every(a => (p.amenities || []).includes(a))) return false;
     if (S.q) {
       const hay = [
         p.id, loc(p.title), p.title.ar, p.title.fr, p.title.en,
@@ -222,6 +220,10 @@
         <div class="s">${esc(unitLabel(p))}</div>
       </div>
       <div class="card-cta">
+        <button class="icon-btn cmp-btn${CMP.includes(p.id) ? ' is-on' : ''}" type="button" data-cmp="${esc(p.id)}"
+                aria-pressed="${CMP.includes(p.id)}" aria-label="${esc(t('cmpAdd'))}" title="${esc(t('cmpAdd'))}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M5 8v8l7 5 7-5V8"/></svg>
+        </button>
         <button class="btn btn--outline" type="button" data-detail="${esc(p.id)}">
           <span>${esc(t('details'))}</span>
         </button>
@@ -288,7 +290,9 @@
     if (S.type !== 'all') out.push(pill(typeName(S.type), 'type'));
     if (S.district !== 'all') out.push(pill(districtName(S.district), 'district'));
     if (S.beds) out.push(pill(S.beds + '+ ' + t('roomsLabel'), 'beds'));
-    if (S.budget) out.push(pill('≤ ' + fmt(S.budget), 'budget'));
+    if (S.baths) out.push(pill(S.baths + '+ ' + t('fBaths'), 'baths'));
+    if (S.min || S.max) out.push(pill((S.min ? fmt(S.min) : '0') + ' – ' + (S.max ? fmt(S.max) : '∞'), 'range'));
+    if (S.amens.length) out.push(pill(S.amens.map(a => amenityName(a)).join(' + '), 'amens'));
     if (S.q) out.push(pill('“' + S.q + '”', 'q'));
     if (S.favsOnly) out.push(pill(t('favorites'), 'favs'));
     box.innerHTML = out.join('');
@@ -300,7 +304,14 @@
     set('#f-type', S.type);
     set('#f-district', S.district);
     set('#f-sort', S.sort);
-    set('#f-budget', S.budget);
+    set('#f-min', S.min || '');
+    set('#f-max', S.max || '');
+    set('#f-baths', S.baths);
+    $$('.famen').forEach(c => {
+      const on = S.amens.includes(c.dataset.famen);
+      c.classList.toggle('is-on', on);
+      c.setAttribute('aria-pressed', String(on));
+    });
     set('#f-beds', S.beds);
     $$('[data-cur]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cur === S.cur)));
     const ft = $('#fav-toggle');
@@ -316,7 +327,7 @@
   }
 
   function reset(silent) {
-    Object.assign(S, { deal: 'all', type: 'all', district: 'all', budget: 0, beds: 0, q: '', sort: 'newest', favsOnly: false, shown: CFG.pageSize || 6 });
+    Object.assign(S, { deal: 'all', type: 'all', district: 'all', min: 0, max: 0, beds: 0, baths: 0, amens: [], q: '', sort: 'newest', favsOnly: false, shown: CFG.pageSize || 6 });
     const s = $('#f-search'); if (s) s.value = '';
     fillOptions();
     render();
@@ -331,6 +342,120 @@
       <small>${esc(label)}</small>
       <strong${ltr ? ' dir="ltr" style="display:inline-block"' : ''}>${esc(value)}</strong>
     </span></div>`;
+  }
+
+  /* ---------- compare ---------- */
+  function cmpToggle(id) {
+    if (CMP.includes(id)) CMP = CMP.filter(x => x !== id);
+    else {
+      if (CMP.length >= 3) { toast(t('cmpMax'), 'err'); return; }
+      CMP.push(id);
+    }
+    store.set(KEY_CMP, CMP);
+    renderCmpBar();
+    render();
+    if (openId) { const p = find(openId); if (p) renderDetail(p); }
+  }
+
+  function renderCmpBar() {
+    const bar = $('#cmp-bar');
+    if (!bar) return;
+    bar.hidden = CMP.length === 0;
+    const box = $('#cmp-thumbs');
+    if (box) box.innerHTML = CMP.map(id => {
+      const p = find(id);
+      if (!p) return '';
+      return `<span class="cmp-chip"><img src="${esc(img(p.images && p.images[0] ? p.images[0] : 'villa-2', 480))}" alt="" /><button type="button" data-cmp-del="${esc(id)}" aria-label="${esc(t('cmpRemove'))}">✕</button></span>`;
+    }).join('');
+    const gt = $('#cmp-go-txt');
+    if (gt) gt.textContent = t('cmpGo') + ' (' + CMP.length + ')';
+  }
+
+  function openCmp() {
+    const props = CMP.map(id => find(id)).filter(Boolean);
+    if (props.length < 2) { toast(t('cmpNeed2'), 'err'); return; }
+    const priceCell = (p) => {
+      const m = money(priceOf(p));
+      return esc(m.v) + ' <small>' + esc(m.c) + '</small><br><span class="cmp-unit">' + esc(unitLabel(p)) + '</span>';
+    };
+    const rows = [
+      [t('adminFieldPrice'), priceCell],
+      [t('sType'), p => esc(typeName(p.type))],
+      [t('district'), p => esc(districtName(p.district))],
+      [t('sRooms'), p => num(p.rooms)],
+      [t('sBaths'), p => num(p.baths)],
+      [t('sArea'), p => num(p.area) + ' m²'],
+      [t('amenitiesH'), p => String((p.amenities || []).length)],
+      ['', p => `<button class="btn btn--primary btn--sm" type="button" data-detail="${esc(p.id)}"><span>${esc(t('details'))}</span></button>`]
+    ];
+    $('#cmp-body').innerHTML = `
+      <table class="cmp-table">
+        <thead><tr><th></th>${props.map(p => `<th>
+          <img src="${esc(img(p.images && p.images[0] ? p.images[0] : 'villa-2', 480))}" alt="" />
+          <span>${esc(loc(p.title))}</span></th>`).join('')}</tr></thead>
+        <tbody>${rows.map(([lab, fn]) => `<tr><th>${esc(lab)}</th>${props.map(p => `<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>`;
+    const m = $('#cmp-modal');
+    m.classList.add('is-open');
+    m.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCmp() {
+    const m = $('#cmp-modal');
+    if (!m || !m.classList.contains('is-open')) return;
+    m.classList.remove('is-open');
+    m.setAttribute('aria-hidden', 'true');
+    if (!$('#modal').classList.contains('is-open')) document.body.style.overflow = '';
+  }
+
+  function loadMap() {
+    const em = $('#map-embed');
+    if (!em || em.querySelector('iframe') || !mapEmbedUrl) return;
+    em.innerHTML = '<iframe title="map" loading="lazy" src="' + mapEmbedUrl + '"></iframe>';
+    em.classList.add('is-on');
+  }
+
+  function mapCard(p) {
+    const d = (window.DISTRICTS || []).find(x => x.id === p.district) || {};
+    const cc = d.coords || [11.592, 43.145];
+    const gmaps = 'https://www.google.com/maps/search/?api=1&query=' + cc[0] + ',' + cc[1];
+    mapEmbedUrl = 'https://www.openstreetmap.org/export/embed.html?bbox=' +
+      (cc[1] - 0.012) + ',' + (cc[0] - 0.008) + ',' + (cc[1] + 0.012) + ',' + (cc[0] + 0.008) +
+      '&layer=mapnik&marker=' + cc[0] + ',' + cc[1];
+    return `
+      <div class="map-card">
+        <div class="map-art" aria-hidden="true">
+          <svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice">
+            <rect width="400" height="160" fill="#EAF2EC"/>
+            <path d="M-10 110 L410 80" stroke="#fff" stroke-width="14"/>
+            <path d="M-10 110 L410 80" stroke="#D8E2DA" stroke-width="1.5"/>
+            <path d="M60 -10 L110 170" stroke="#fff" stroke-width="11"/>
+            <path d="M250 -10 L220 170" stroke="#fff" stroke-width="9"/>
+            <path d="M-10 40 L410 25" stroke="#fff" stroke-width="7"/>
+            <rect x="300" y="95" width="70" height="45" fill="#DCE8DF"/>
+            <rect x="130" y="100" width="55" height="30" fill="#DCE8DF"/>
+          </svg>
+          <span class="map-pin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+        </div>
+        <div class="map-info">
+          <div>
+            <strong>${esc(districtName(p.district))}</strong>
+            <span>${esc(getLang() === 'ar' ? CFG.addressAr : CFG.addressFr)}</span>
+            <small>${esc(t('mapNote'))}</small>
+          </div>
+          <div class="map-actions">
+            <a class="btn btn--outline btn--sm" href="${esc(gmaps)}" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>${esc(t('mapOpen'))}</span>
+            </a>
+            <button class="btn btn--link btn--sm" type="button" data-map-load>${esc(t('mapLoad'))}</button>
+          </div>
+        </div>
+        <div class="map-embed" id="map-embed"></div>
+      </div>`;
   }
 
   function renderDetail(p) {
@@ -414,7 +539,7 @@
 
   <div class="d-block">
     <h4>${esc(t('location'))}</h4>
-    <p>${esc(districtName(p.district))}, ${esc(getLang() === 'ar' ? CFG.addressAr : CFG.addressFr)}</p>
+    ${mapCard(p)}
   </div>
 
   <div class="agent">
@@ -438,6 +563,20 @@
     <button class="btn btn--outline" type="button" id="share-btn" aria-label="${esc(t('share'))}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
     </button>
+    <button class="btn btn--outline${CMP.includes(p.id) ? ' is-on' : ''}" type="button" data-cmp="${esc(p.id)}" aria-pressed="${CMP.includes(p.id)}" aria-label="${esc(t('cmpAdd'))}" title="${esc(t('cmpAdd'))}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M5 8v8l7 5 7-5V8"/></svg>
+    </button>
+  </div>
+  ${similarBlock(p)}`;
+  }
+
+  function similarBlock(p) {
+    const sim = LIST.filter(x => x.id !== p.id && (x.type === p.type || x.district === p.district)).slice(0, 3);
+    if (!sim.length) return '';
+    return `
+  <div class="d-block sim-block">
+    <h4>${esc(t('similarTitle'))}</h4>
+    <div class="sim-grid">${sim.map(card).join('')}</div>
   </div>`;
   }
 
@@ -454,6 +593,7 @@
   function openDetail(id) {
     const p = find(id);
     if (!p) return;
+    closeCmp();
     if (ST && ST.bumpViews) ST.bumpViews(id);
     lastFocus = document.activeElement;
     renderDetail(p);
@@ -688,7 +828,7 @@
     /* search panel */
     $$('[data-deal]').forEach(b => b.addEventListener('click', () => {
       S.deal = b.dataset.deal;
-      S.budget = 0;
+      S.min = 0; S.max = 0;
       S.shown = CFG.pageSize || 6;
       fillOptions();
       render();
@@ -697,7 +837,9 @@
 
     $('#f-type').addEventListener('change', e => { S.type = e.target.value; S.shown = CFG.pageSize || 6; render(); });
     $('#f-district').addEventListener('change', e => { S.district = e.target.value; S.shown = CFG.pageSize || 6; render(); });
-    $('#f-budget').addEventListener('change', e => { S.budget = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
+    $('#f-min').addEventListener('input', e => { S.min = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
+    $('#f-max').addEventListener('input', e => { S.max = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
+    $('#f-baths').addEventListener('change', e => { S.baths = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
     $('#f-beds').addEventListener('change', e => { S.beds = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
     $('#f-sort').addEventListener('change', e => { S.sort = e.target.value; render(); });
     $('#f-search').addEventListener('input', e => { S.q = e.target.value; S.shown = CFG.pageSize || 6; render(); });
@@ -743,7 +885,9 @@
         if (k === 'type') S.type = 'all';
         if (k === 'district') S.district = 'all';
         if (k === 'beds') S.beds = 0;
-        if (k === 'budget') S.budget = 0;
+        if (k === 'baths') S.baths = 0;
+        if (k === 'range') { S.min = 0; S.max = 0; }
+        if (k === 'amens') S.amens = [];
         if (k === 'q') { S.q = ''; $('#f-search').value = ''; }
         if (k === 'favs') S.favsOnly = false;
         fillOptions(); render();
@@ -760,7 +904,7 @@
       const quick = e.target.closest('[data-quick]');
       if (quick) {
         const [a, deal] = quick.dataset.quick.split('|');
-        S.deal = deal; S.budget = 0; S.beds = 0;
+        S.deal = deal; S.min = 0; S.max = 0; S.beds = 0; S.baths = 0; S.amens = [];
         if (TYPES.some(x => x.id === a)) { S.type = a; S.district = 'all'; }
         else { S.district = a; S.type = 'all'; }
         S.favsOnly = false;
@@ -771,13 +915,27 @@
       }
       const tlink = e.target.closest('[data-type-link]');
       if (tlink) {
-        S.type = tlink.dataset.typeLink; S.deal = 'all'; S.budget = 0; S.beds = 0;
+        S.type = tlink.dataset.typeLink; S.deal = 'all'; S.min = 0; S.max = 0; S.beds = 0; S.baths = 0; S.amens = [];
         S.shown = CFG.pageSize || 6;
         fillOptions(); render();
         return;
       }
       if (e.target.closest('[data-reset]')) { reset(true); return; }
 
+      const cm = e.target.closest('[data-cmp]');
+      if (cm) { e.stopPropagation(); cmpToggle(cm.dataset.cmp); return; }
+      const cdel = e.target.closest('[data-cmp-del]');
+      if (cdel) { e.stopPropagation(); cmpToggle(cdel.dataset.cmpDel); return; }
+      const ml = e.target.closest('[data-map-load]');
+      if (ml) { loadMap(); ml.remove(); return; }
+      const fam = e.target.closest('[data-famen]');
+      if (fam) {
+        const a = fam.dataset.famen;
+        S.amens = S.amens.includes(a) ? S.amens.filter(x => x !== a) : S.amens.concat(a);
+        S.shown = CFG.pageSize || 6;
+        render();
+        return;
+      }
       const fav = e.target.closest('[data-fav]');
       if (fav) { e.stopPropagation(); toggleFav(fav.dataset.fav); return; }
 
@@ -788,6 +946,34 @@
       if (cardEl && !e.target.closest('a,button')) { openDetail(cardEl.dataset.id); }
     });
 
+    const cmpGo = $('#cmp-go');
+    if (cmpGo) cmpGo.addEventListener('click', openCmp);
+    const cmpClr = $('#cmp-clear');
+    if (cmpClr) cmpClr.addEventListener('click', () => {
+      CMP = [];
+      store.set(KEY_CMP, CMP);
+      renderCmpBar();
+      render();
+    });
+    $('#cmp-modal').addEventListener('click', e => {
+      if (e.target.closest('[data-cmp-close]')) closeCmp();
+    });
+
+    /* swipe gallery */
+    let swX = null;
+    $('#modal').addEventListener('touchstart', e => {
+      if (e.target.closest('.gal-main')) swX = e.touches[0].clientX;
+    }, { passive: true });
+    $('#modal').addEventListener('touchend', e => {
+      if (swX === null) return;
+      const dx = e.changedTouches[0].clientX - swX;
+      swX = null;
+      if (Math.abs(dx) > 42) {
+        const rtl = document.documentElement.dir === 'rtl';
+        galTo(galIdx + (((dx < 0) === rtl) ? 1 : -1));
+      }
+    }, { passive: true });
+
     /* modal */
     $('#modal').addEventListener('click', e => {
       if (e.target.closest('[data-close]')) { closeDetail(); return; }
@@ -797,6 +983,11 @@
       if (th) { galTo(Number(th.dataset.thumb)); return; }
       const vr = e.target.closest('[data-view-req]');
       if (vr) { openContactWithRef(vr.dataset.viewReq); return; }
+      if (e.target.id === 'gal-img') {
+        const gm = e.target.closest('.gal-main');
+        if (gm) gm.classList.toggle('is-zoom');
+        return;
+      }
       if (e.target.closest('#share-btn')) {
         const url = location.href;
         if (navigator.share) {
@@ -812,6 +1003,7 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         if ($('#modal').classList.contains('is-open')) closeDetail();
+        if ($('#cmp-modal').classList.contains('is-open')) closeCmp();
         closeDrawer();
         closeLang();
       }
@@ -875,6 +1067,7 @@
     /* re-render on language change */
     document.addEventListener('langchange', () => {
     pgLabel();
+    renderCmpBar();
       fillOptions();
       render();
       renderThumbs();
@@ -1209,6 +1402,7 @@
     render();
     bind();
     bindContactForm();
+    renderCmpBar();
     bindAuth();
     refreshAuth();
     initGoogle();

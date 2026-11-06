@@ -22,18 +22,18 @@ const SITE_CONFIG = {
 
 /* الأحياء / quartiers */
 const DISTRICTS = [
-  { id: 'heron',    ar: 'حيرون',         fr: 'Héron',           en: 'Heron' },
-  { id: 'haramous', ar: 'حرموس',         fr: 'Haramous',        en: 'Haramous' },
-  { id: 'saudi',    ar: 'سيتي سعودي',    fr: 'Cité Saoudienne', en: 'Saudi City' },
-  { id: 'wadjir',   ar: 'سيتي ودجير',    fr: 'Cité Wadjir',     en: 'Wadjir City' },
-  { id: 'centre',   ar: 'وسط المدينة',   fr: 'Centre-ville',    en: 'Downtown' },
-  { id: 'gabode',   ar: 'غابوديه',       fr: 'Gabode',          en: 'Gabode' },
-  { id: 'balbala',  ar: 'بلبالة',        fr: 'Balbala',         en: 'Balbala' },
-  { id: 'ambouli',  ar: 'أمبولي',        fr: 'Ambouli',         en: 'Ambouli' },
-  { id: 'boulaos',  ar: 'بولوس',         fr: 'Boulaos',         en: 'Boulaos' },
-  { id: 'salines',  ar: 'سالين غرب',     fr: 'Salines Ouest',   en: 'Salines West' },
-  { id: 'arta',     ar: 'أرتا',          fr: 'Arta',            en: 'Arta' },
-  { id: 'douda',    ar: 'دودة',          fr: 'Douda',           en: 'Douda' }
+  { id: 'heron',    ar: 'حيرون',         fr: 'Héron',           en: 'Heron', coords: [11.595, 43.149] },
+  { id: 'haramous', ar: 'حرموس',         fr: 'Haramous',        en: 'Haramous', coords: [11.588, 43.152] },
+  { id: 'saudi',    ar: 'سيتي سعودي',    fr: 'Cité Saoudienne', en: 'Saudi City', coords: [11.573, 43.138] },
+  { id: 'wadjir',   ar: 'سيتي ودجير',    fr: 'Cité Wadjir',     en: 'Wadjir City', coords: [11.564, 43.148] },
+  { id: 'centre',   ar: 'وسط المدينة',   fr: 'Centre-ville',    en: 'Downtown', coords: [11.592, 43.145] },
+  { id: 'gabode',   ar: 'غابوديه',       fr: 'Gabode',          en: 'Gabode', coords: [11.583, 43.135] },
+  { id: 'balbala',  ar: 'بلبالة',        fr: 'Balbala',         en: 'Balbala', coords: [11.557, 43.123] },
+  { id: 'ambouli',  ar: 'أمبولي',        fr: 'Ambouli',         en: 'Ambouli', coords: [11.579, 43.128] },
+  { id: 'boulaos',  ar: 'بولوس',         fr: 'Boulaos',         en: 'Boulaos', coords: [11.568, 43.143] },
+  { id: 'salines',  ar: 'سالين غرب',     fr: 'Salines Ouest',   en: 'Salines West', coords: [11.586, 43.128] },
+  { id: 'arta',     ar: 'أرتا',          fr: 'Arta',            en: 'Arta', coords: [11.523, 42.846] },
+  { id: 'douda',    ar: 'دودة',          fr: 'Douda',           en: 'Douda', coords: [11.548, 43.113] }
 ];
 
 /* أنواع العقارات */
