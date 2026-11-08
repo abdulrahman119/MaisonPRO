@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://abdulrahman119.github.io/MaisonPRO/sitemap.xml
+Sitemap: https://maisonpro.dj/sitemap.xml

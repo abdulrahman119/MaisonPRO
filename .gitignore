@@ -5,3 +5,9 @@ node_modules/
 
 # source images used only while building the demo assets
 image-search/
+
+# build output / deploy tooling
+dist/
+.netlify/
+.vercel/
+package-lock.json

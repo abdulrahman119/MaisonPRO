@@ -14,23 +14,25 @@
 <meta property="og:site_name" content="MaisonPRO" />
 <meta property="og:title" content="MaisonPRO — عقارات جيبوتي" />
 <meta property="og:description" content="شقق وفيلات ومكاتب للإيجار والبيع في أرقى أحياء جيبوتي. بحث سريع وتواصل مباشر عبر واتساب." />
-<meta property="og:image" content="assets/img/hero-1000.webp" />
+<meta property="og:url" content="https://maisonpro.dj/" />
+<meta property="og:image" content="https://maisonpro.dj/assets/img/hero-1000.webp" />
 <meta name="twitter:card" content="summary_large_image" />
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230E7C86'/%3E%3Cpath d='M32 15 50 29v20H38V37h-12v12H14V29z' fill='%23fff'/%3E%3C/svg%3E" />
 <meta name="format-detection" content="telephone=no" />
 
-<link rel="alternate" hreflang="ar" href="https://abdulrahman119.github.io/MaisonPRO/?lang=ar" />
-<link rel="alternate" hreflang="fr" href="https://abdulrahman119.github.io/MaisonPRO/?lang=fr" />
-<link rel="alternate" hreflang="en" href="https://abdulrahman119.github.io/MaisonPRO/?lang=en" />
-<link rel="alternate" hreflang="x-default" href="https://abdulrahman119.github.io/MaisonPRO/" />
+<link rel="alternate" hreflang="ar" href="https://maisonpro.dj/?lang=ar" />
+<link rel="alternate" hreflang="fr" href="https://maisonpro.dj/?lang=fr" />
+<link rel="alternate" hreflang="en" href="https://maisonpro.dj/?lang=en" />
+<link rel="alternate" hreflang="x-default" href="https://maisonpro.dj/" />
 <meta name="robots" content="index,follow,max-image-preview:large" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","name":"MaisonPRO","url":"https://abdulrahman119.github.io/MaisonPRO/","inLanguage":["ar","fr","en"]}
+{"@context":"https://schema.org","@type":"WebSite","name":"MaisonPRO","url":"https://maisonpro.dj/","inLanguage":["ar","fr","en"]}
 </script>
 <link rel="preload" href="assets/fonts/cairo-arabic-600-normal.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/fonts/cairo-arabic-800-normal.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="stylesheet" href="assets/css/styles.css" />
+<link rel="stylesheet" href="assets/css/launch.css" />
 
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"RealEstateAgent","name":"MaisonPRO","description":"وساطة عقارية في جيبوتي — إيجار وبيع الشقق والفيلات والمكاتب.","areaServed":"Djibouti","telephone":"+253 77 69 02 23","address":{"@type":"PostalAddress","streetAddress":"Boulevard Bourguiba","addressLocality":"Djibouti","addressCountry":"DJ"}}
@@ -38,6 +40,13 @@
 </head>
 <body>
 <span id="top"></span>
+
+<!-- شريط تنبيه النسخة التجريبية — يُظهره app.js حسب SITE_CONFIG.demoMode -->
+<div class="demo-bar" id="demo-bar" hidden role="status">
+  <span class="demo-dot" aria-hidden="true"></span>
+  <span data-i18n="demoNotice">نسخة تجريبية: الإعلانات والأسعار وبيانات التواصل توضيحية وليست عقارات حقيقية.</span>
+  <a href="terms.html" data-i18n="demoMore">التفاصيل</a>
+</div>
 
 <a class="skip" href="#main" data-i18n="skip">تجاوز إلى المحتوى</a>
 
@@ -142,7 +151,6 @@
 </div>
 
 <main id="main">
-<span id="top"></span>
 
 <!-- ================= HERO ================= -->
 <section class="hero">
@@ -551,7 +559,7 @@
 
           <div class="check">
             <input type="checkbox" id="o-terms" required />
-            <label for="o-terms"><span data-i18n="terms">أؤكد أن العقار ملكي أو أنني مفوّض به، وأوافق على شروط الاستخدام.</span> <a href="#footer" data-i18n="termsLink">شروط الخدمة</a></label>
+            <label for="o-terms"><span data-i18n="terms">أؤكد أن العقار ملكي أو أنني مفوّض به، وأوافق على شروط الاستخدام.</span> <a href="terms.html" data-i18n="termsLink">شروط الخدمة</a></label>
             <span class="err" data-i18n="errTerms">يجب الموافقة على الشروط</span>
           </div>
 
@@ -684,6 +692,8 @@
           <li><a href="#services" data-i18n="navServices">خدماتنا</a></li>
           <li><a href="#add-property" data-i18n="navAdd">أضف عقارك</a></li>
           <li><a href="#contact" data-i18n="navContact">اتصل بنا</a></li>
+          <li><a href="privacy.html" data-i18n="footerPrivacy">سياسة الخصوصية</a></li>
+          <li><a href="terms.html" data-i18n="footerTerms">شروط الاستخدام</a></li>
           <li><a href="#" id="track-open-2" data-i18n="trackLink">تابع حالة طلبك</a></li>
           <li><a href="#admin" id="admin-link" class="admin-entry" data-i18n="navAdmin">الإدارة</a></li>
         </ul>
@@ -872,9 +882,11 @@
   </div>
 </noscript>
 
+<script src="assets/js/runtime.js" defer></script>
 <script src="assets/js/data.js" defer></script>
 <script src="assets/js/i18n.js" defer></script>
 <script src="assets/js/store.js" defer></script>
+<script src="assets/js/forms.js" defer></script>
 <script src="assets/js/app.js" defer></script>
 <script src="assets/js/admin.js" defer></script>
 </body>

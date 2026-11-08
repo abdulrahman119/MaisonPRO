@@ -1,0 +1,48 @@
+# =========================================================
+# MaisonPRO · Netlify
+# الاستضافة المختارة للإطلاق الأول. البناء لا يحتاج أي مكتبات.
+# اضبط المتغيرات أدناه من: Site configuration → Environment variables
+# =========================================================
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# [build.environment]
+#   SITE_URL        = "https://maisonpro.dj"          # عند ربط الدومين الخاص
+#   DEMO_MODE       = "0"                            # أطفئ الوضع التجريبي يوم الإطلاق
+#   FORMS_PROVIDER  = "formspree"
+#   FORMS_ENDPOINT  = "https://formspree.io/f/XXXXXX"
+#   FORMS_API_KEY   = ""                             # للـ Supabase فقط (anon key)
+
+# ---------- ترويسات الأمان ----------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; form-action 'self' https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'self'"
+
+# ---------- تخزين مؤقت طويل للأصول الثابتة ----------
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# ---------- اختصارات ----------
+[[redirects]]
+  from = "/admin"
+  to = "/#admin"
+  status = 302
+
+[[redirects]]
+  from = "/villas"
+  to = "/?type=villa#properties"
+  status = 302
