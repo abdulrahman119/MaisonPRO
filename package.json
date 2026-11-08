@@ -1,0 +1,14 @@
+{
+  "name": "maisonpro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MaisonPRO — موقع عقارات جيبوتي (موقع ثابت بدون مكتبات)",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "serve": "python3 -m http.server 8080 --bind 0.0.0.0",
+    "check": "node tools/check.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

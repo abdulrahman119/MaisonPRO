@@ -16,8 +16,23 @@ const SITE_CONFIG = {
   djfPerUsd: 177.721,
   djfPerEur: 192.5,
   maxImages: 6,
-  pageSize: 6
+  pageSize: 6,
+
+  /* وضع العرض التجريبي: شريط تنبيه + منع الفهرسة (يُطفأ يوم الإطلاق) */
+  demoMode: true,
+
+  /* استقبال طلبات «أضف عقارك» — تُضبط وقت النشر عبر متغيرات البيئة */
+  forms: { provider: 'none', endpoint: '', apiKey: '' }
 };
+
+/* قيم وقت النشر (يولّدها tools/build.mjs) تتجاوز الافتراضات أعلاه */
+if (window.MP_RUNTIME_CONFIG) {
+  Object.assign(SITE_CONFIG, window.MP_RUNTIME_CONFIG);
+  SITE_CONFIG.forms = Object.assign(
+    { provider: 'none', endpoint: '', apiKey: '' },
+    window.MP_RUNTIME_CONFIG.forms || SITE_CONFIG.forms
+  );
+}
 
 /* الأحياء / quartiers */
 const DISTRICTS = [

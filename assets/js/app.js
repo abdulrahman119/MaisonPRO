@@ -565,7 +565,7 @@
     return !first;
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
     if (!validate()) { toast(t('toastFix'), 'err'); return; }
 
@@ -598,6 +598,40 @@
     p.adminNotes = '';
     p.rejectReason = '';
 
+    /* ----- إرسال الطلب إلى خدمة النماذج (إن ضُبطت) -----
+       الصور لا تُرسل: تبقى في المتصفح وتُشارك عبر واتساب. */
+    const btn = $('#submit-btn');
+    const btnLabel = btn ? btn.querySelector('[data-i18n="submit"]') : null;
+    if (btn) { btn.disabled = true; if (btnLabel) btnLabel.textContent = t('formSending'); }
+
+    const row = {
+      ref: p.id,
+      title,
+      deal,
+      type: p.type,
+      district,
+      price_djf: price,
+      nightly_djf: nightly,
+      rooms: p.rooms,
+      baths: p.baths,
+      area: p.area,
+      amenities: p.amenities.join(', '),
+      description: p.description.ar,
+      owner_name: p.owner.name,
+      owner_phone: p.owner.phone,
+      photo_count: photos.length,
+      lang: window.getLang ? window.getLang() : 'ar',
+      page_url: location.href.split('#')[0],
+      submitted_at: p.createdAt
+    };
+    const delivery = window.MPForms
+      ? await window.MPForms.send(row)
+      : { ok: false, mode: 'local' };
+
+    if (btn) { btn.disabled = false; if (btnLabel) btnLabel.textContent = t('submit'); }
+    p.delivery = delivery.mode;
+
+    /* نسخة محلية دائماً: تسمح بمتابعة الطلب داخل نفس المتصفح */
     if (ST) ST.upsert(p);
     fillOptions();
     render();
@@ -607,7 +641,9 @@
     const refEl = $('#success-ref');
     if (refEl) refEl.textContent = p.id;
     if (window.MPAdmin) MPAdmin.render();
-    toast(t('toastSent'), 'ok');
+    if (delivery.ok) toast(t('toastSentRemote'), 'ok');
+    else if (delivery.mode === 'local') toast(t('toastSentLocal'), 'ok');
+    else toast(t('toastSendFail'), 'err');
 
     const msg = [
       'طلب إضافة عقار / Nouvelle annonce',
@@ -962,6 +998,25 @@
   };
 
   /* ---------- boot ---------- */
+  /* روابط قابلة للمشاركة: ?type=villa&deal=sale&district=heron&q=... */
+  function applyUrlFilters() {
+    try {
+      const q = new URL(location.href).searchParams;
+      const type = q.get('type');
+      const deal = q.get('deal');
+      const district = q.get('district');
+      const text = q.get('q');
+      if (type && (type === 'all' || TYPES.some(x => x.id === type))) S.type = type;
+      if (deal && ['all', 'rent', 'daily', 'sale'].indexOf(deal) > -1) S.deal = deal;
+      if (district && (district === 'all' || DISTRICTS.some(d => d.id === district))) S.district = district;
+      if (text) {
+        S.q = text.slice(0, 80);
+        const el = $('#f-search');
+        if (el) el.value = S.q;
+      }
+    } catch (e) { /* روابط غير صالحة تُتجاهل */ }
+  }
+
   function loadListings() {
     const all = ST ? ST.list() : (window.PROPERTIES || []);
     LIST = all.filter(p => (p.status || 'published') === 'published');
@@ -969,6 +1024,13 @@
 
   function init() {
     loadListings();
+
+    /* شريط النسخة التجريبية — يظهر فقط حين يكون demoMode مفعّلاً */
+    const demoBar = $('#demo-bar');
+    if (demoBar) {
+      demoBar.hidden = CFG.demoMode === false;
+      document.documentElement.classList.toggle('is-demo', CFG.demoMode !== false);
+    }
 
     /* a fresh load must never inherit an open overlay */
     ['#track-modal', '#admin-modal', '#modal'].forEach(sel => {
@@ -984,6 +1046,7 @@
       try { lang = (window.detectLang && detectLang()) || 'ar'; } catch (e) { lang = 'ar'; }
     }
     applyLang(lang);
+    applyUrlFilters();
 
     try { S.cur = localStorage.getItem('mp:cur') || 'DJF'; } catch (e) {}
     document.documentElement.dataset.currency = S.cur;

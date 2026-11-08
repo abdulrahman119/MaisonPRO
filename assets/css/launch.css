@@ -1,0 +1,82 @@
+/* =========================================================
+   MaisonPRO · launch.css
+   شريط النسخة التجريبية + الصفحات القانونية وصفحة 404
+   ========================================================= */
+
+/* ---------- demo notice ---------- */
+.demo-bar[hidden]{display:none}
+.demo-bar{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  padding:8px 16px;text-align:center;
+  background:linear-gradient(90deg,#FFF4DC,#FFE9BE);
+  color:#6A4A12;border-bottom:1px solid #EAD3A0;
+  font-size:.8rem;font-weight:600;line-height:1.6;
+  position:relative;z-index:710;
+}
+.demo-bar .demo-dot{
+  width:8px;height:8px;flex:none;border-radius:50%;background:#C58A1B;
+  box-shadow:0 0 0 4px rgba(197,138,27,.16);
+}
+.demo-bar a{
+  color:inherit;text-decoration:underline;text-underline-offset:3px;font-weight:700;
+}
+.demo-bar a:hover{color:#3D2A08}
+
+/* ---------- legal / simple pages ---------- */
+.legal-head{
+  border-bottom:1px solid var(--line);background:#fff;
+  position:sticky;top:0;z-index:700;
+}
+.legal-head .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+.legal-head .brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.legal-head .brand-mark{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--teal);color:#fff}
+.legal-head .brand-mark svg{width:20px;height:20px}
+.legal-head .brand-name{font-weight:800;font-size:1.05rem;letter-spacing:.01em}
+.legal-head .brand-name b{color:var(--teal)}
+.legal-head .back{
+  display:inline-flex;align-items:center;gap:6px;font-size:.84rem;font-weight:700;
+  color:var(--teal);text-decoration:none;border:1px solid var(--line);
+  padding:7px 12px;border-radius:999px;background:#fff;
+}
+.legal-head .back:hover{border-color:var(--teal)}
+
+.legal-wrap{max-width:860px;margin:0 auto;padding:44px 20px 80px}
+.legal-wrap h1{font-size:clamp(1.5rem,3.5vw,2.1rem);margin:0 0 10px;color:var(--ink)}
+.legal-wrap .lead{color:var(--ink-2);line-height:1.9;margin:0 0 14px;font-size:.98rem}
+.legal-wrap .updated{font-size:.78rem;color:var(--ink-3);margin:0 0 26px}
+.legal-wrap h2{
+  font-size:1.08rem;margin:32px 0 10px;padding-inline-start:12px;
+  border-inline-start:3px solid var(--teal);line-height:1.6;color:var(--ink);
+}
+.legal-wrap p,.legal-wrap li{line-height:1.95;color:var(--ink-2);font-size:.92rem}
+.legal-wrap ul{padding-inline-start:22px;margin:8px 0 0}
+.legal-wrap li{margin-bottom:6px}
+.legal-wrap .callout{
+  background:var(--sand-soft,#FFF4DC);border:1px solid #EAD3A0;border-radius:12px;
+  padding:14px 16px;margin:18px 0;font-size:.88rem;line-height:1.9;color:#6A4A12;
+}
+.legal-wrap .callout b{color:inherit}
+.legal-wrap .placeholder{
+  background:rgba(27,108,168,.07);border:1px dashed var(--line);
+  padding:1px 6px;border-radius:6px;font-weight:700;color:var(--ink);
+}
+.legal-wrap details{
+  border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0;background:#fff;
+}
+.legal-wrap summary{cursor:pointer;font-weight:700;font-size:.9rem;color:var(--ink)}
+.legal-wrap details p{margin:10px 0 0}
+.legal-foot{border-top:1px solid var(--line);padding:18px 0;font-size:.8rem;color:var(--ink-3);text-align:center}
+.legal-foot a{color:var(--teal);text-decoration:none}
+.legal-foot a:hover{text-decoration:underline}
+
+/* ---------- 404 ---------- */
+.nf{text-align:center;padding:70px 20px 90px}
+.nf .code{font-size:clamp(4rem,14vw,7rem);font-weight:800;line-height:1;color:var(--teal);opacity:.18}
+.nf h1{font-size:1.5rem;margin:-18px 0 10px;color:var(--ink)}
+.nf p{color:var(--ink-2);line-height:1.9;margin:0 0 22px}
+.nf .btn{text-decoration:none}
+
+@media (max-width:520px){
+  .demo-bar{font-size:.74rem;padding:7px 12px}
+  .legal-wrap{padding:30px 16px 60px}
+}
