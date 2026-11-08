@@ -30,6 +30,19 @@
   };
 
   /* ---------- helpers ---------- */
+  function timeline(p) {
+    const st = p.status || 'published';
+    const s2 = st === 'pending' ? 'on' : 'on';
+    const s3 = st === 'published' ? 'on' : st === 'rejected' ? 'rej' : '';
+    return `
+<div class="timeline" aria-hidden="true">
+  <span class="tl on"><i>✓</i>${esc(t('adminStep1'))}</span>
+  <span class="tl-link on"></span>
+  <span class="tl ${s2}"><i>✓</i>${esc(t('adminStep2'))}</span>
+  <span class="tl-link ${s3 ? 'on' : ''}"></span>
+  <span class="tl ${s3}"><i>✓</i>${esc(st === 'rejected' ? t('adminStep3Rej') : t('adminStep3'))}</span>
+</div>`;
+  }
   function statusPill(s) {
     const label = STATUS_LABEL[s] ? STATUS_LABEL[s]() : s;
     return `<span class="st st--${esc(s)}"><i></i>${esc(label)}</span>`;
@@ -60,16 +73,11 @@
     box.appendChild(el);
     setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, 2600);
   }
-  function waTo(phone, msg) {
-    const p = String(phone || '').replace(/\D/g, '');
-    return `https://wa.me/${p}?text=${encodeURIComponent(msg)}`;
-  }
-
   /* ---------- login ---------- */
   function showPanel(on) {
     $('#admin-login').hidden = on;
     $('#admin-panel').hidden = !on;
-    if (on) render();
+    if (on) { syncGuide(); render(); }
   }
 
   function bindLogin() {
@@ -94,9 +102,61 @@
       closeEditor();
     });
     $('#admin-settings-btn').addEventListener('click', openSettings);
+
+    /* first-run guide: how the moderation flow works */
+    const gx = $('#admin-guide-x');
+    if (gx) gx.addEventListener('click', () => {
+      const g = $('#admin-guide');
+      if (g) g.hidden = true;
+      try { localStorage.setItem('mp:guide:v1', '1'); } catch (e) {}
+    });
+  }
+
+  function syncGuide() {
+    const g = $('#admin-guide');
+    if (!g) return;
+    let done = null;
+    try { done = localStorage.getItem('mp:guide:v1'); } catch (e) {}
+    g.hidden = !!done;
   }
 
   /* ---------- list ---------- */
+  const TOPIC = {
+    general: () => t('cfTopicGeneral'),
+    view: () => t('cfTopicView'),
+    valuation: () => t('cfTopicVal'),
+    other: () => t('cfTopicOther')
+  };
+
+  function msgRow(m) {
+    return `
+<article class="admin-row" data-msg-id="${esc(m.id)}">
+  <div class="ar-thumb" style="display:grid;place-items:center">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;color:var(--coral)"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+  </div>
+  <div class="ar-main">
+    <div class="ar-top">
+      <span class="ar-id" dir="ltr">${esc(m.id)}</span>
+      <span class="ar-when">${esc(ago(m.createdAt))}</span>
+      ${m.ref ? `<span class="ar-id" dir="ltr">${esc(m.ref)}</span>` : ''}
+    </div>
+    <h3>${esc(m.name)} · <span dir="ltr">${esc(m.phone)}</span></h3>
+    <p class="msg-body">${esc(m.message)}</p>
+    <div class="ar-meta">
+      <span>${esc(TOPIC[m.topic] ? TOPIC[m.topic]() : m.topic || '')}</span>
+      ${m.email ? `<span dir="ltr">${esc(m.email)}</span>` : ''}
+    </div>
+  </div>
+  <div class="ar-actions">
+    ${m.ref ? `<button class="btn btn--outline btn--sm" type="button" data-msg-open="${esc(m.ref)}">
+      <span>${esc(t('msgOpen'))}</span></button>` : ''}
+    <button class="icon-btn" type="button" data-msg-del="${esc(m.id)}" aria-label="${esc(t('msgDelete'))}" title="${esc(t('msgDelete'))}" style="color:var(--err)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/><path d="M10 11v5M14 11v5"/></svg>
+    </button>
+  </div>
+</article>`;
+  }
+
   function items() {
     const all = store.list();
     return all.filter(p => (p.status || 'published') === tab)
@@ -111,6 +171,7 @@
   <div class="ar-main">
     <div class="ar-top">
       ${statusPill(p.status || 'published')}
+      ${p.updatedAt ? `<span class="st st--updated"><i></i>${esc(t('adminUpdated'))}</span>` : ''}
       <span class="ar-id" dir="ltr">${esc(p.id)}</span>
       <span class="ar-when">${esc(ago(p.createdAt))}</span>
     </div>
@@ -120,6 +181,8 @@
       <span>${esc(typeName(p.type))}</span>
       <span>${esc(dealWord(p.deal))}</span>
       <span>${esc(num(shownPrice(p)))} DJF ${esc(unitWord(p.deal))}</span>
+      <span>${num(p.views || 0)} ${esc(t('ownViews'))}</span>
+      ${p.publisher && p.publisher.email ? `<span class="ar-pub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>${esc(t('pubTag'))} · ${esc(p.publisher.email)}</span>` : ''}
     </div>
     <div class="ar-owner">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
@@ -127,19 +190,17 @@
     </div>
   </div>
   <div class="ar-actions">
-    <button class="btn btn--ghost btn--sm" type="button" data-review="${esc(p.id)}">
+    <button class="btn btn--navy btn--sm" type="button" data-review="${esc(p.id)}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-      <span>${esc(t('adminReview'))}</span>
+      <span>${esc(t('adminOpenReview'))}</span>
     </button>
     ${p.status !== 'published' ? `
-    <button class="btn btn--ok btn--sm" type="button" data-accept="${esc(p.id)}">
+    <button class="icon-btn" type="button" data-accept="${esc(p.id)}" aria-label="${esc(t('adminAcceptPublish'))}" title="${esc(t('adminAcceptPublish'))}" style="color:var(--ok);border-color:#BCE3CE">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg>
-      <span>${esc(t('adminAccept'))}</span>
     </button>` : ''}
     ${p.status !== 'rejected' ? `
-    <button class="btn btn--ghost btn--sm btn--danger" type="button" data-reject="${esc(p.id)}">
+    <button class="icon-btn" type="button" data-reject="${esc(p.id)}" aria-label="${esc(t('adminReject'))}" title="${esc(t('adminReject'))}" style="color:var(--err);border-color:#E9B5B5">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      <span>${esc(t('adminReject'))}</span>
     </button>` : ''}
   </div>
 </article>`;
@@ -155,21 +216,34 @@
       if (el) el.textContent = counts[k];
     });
 
-    const fromVisitors = all.filter(p => p.source === 'visitor' && (p.status || '') === 'pending').length;
+    const msgs = store.msgs ? store.msgs() : [];
+    const mt = $('#tab-messages');
+    if (mt) mt.textContent = msgs.length;
     const st = $('#admin-stats');
     if (st) {
       st.innerHTML = `
         <div class="ast"><b>${counts.pending}</b><span>${esc(t('adminTabPending'))}</span></div>
         <div class="ast"><b>${counts.published}</b><span>${esc(t('adminTabPublished'))}</span></div>
         <div class="ast"><b>${counts.rejected}</b><span>${esc(t('adminTabRejected'))}</span></div>
-        <div class="ast ast--warn"><b>${fromVisitors}</b><span>${esc(t('adminAwaitingYou'))}</span></div>`;
+        <div class="ast ${msgs.length ? 'ast--warn' : ''}"><b>${msgs.length}</b><span>${esc(t('statMessages'))}</span></div>`;
     }
 
     $$('#admin-tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
 
-    const list = items();
-    $('#admin-list').innerHTML = list.map(row).join('');
-    $('#admin-empty').hidden = list.length > 0;
+    const emptyEl = $('#admin-empty');
+    const emptyTxt = emptyEl ? emptyEl.querySelector('p') : null;
+
+    if (tab === 'messages') {
+      const list = store.msgs ? store.msgs() : [];
+      $('#admin-list').innerHTML = list.map(msgRow).join('');
+      if (emptyEl) emptyEl.hidden = list.length > 0;
+      if (emptyTxt) emptyTxt.textContent = t('msgEmpty');
+    } else {
+      const list = items();
+      $('#admin-list').innerHTML = list.map(row).join('');
+      if (emptyEl) emptyEl.hidden = list.length > 0;
+      if (emptyTxt) emptyTxt.textContent = t('adminEmptyText');
+    }
   }
 
   /* ---------- accept / reject ---------- */
@@ -192,14 +266,18 @@
       <div class="reject-form">
         <p class="reject-lead">${esc(t('adminRejectLead'))}</p>
         <div class="reject-chips">
-          ${reasons.map(r => `<button type="button" class="amen-chip" data-reason="${esc(r)}">${esc(r)}</button>`).join('')}
+          ${reasons.map(r => `<button type="button" class="chip" data-reason="${esc(r)}">${esc(r)}</button>`).join('')}
         </div>
         <label class="sr-only" for="reject-note">${esc(t('adminReason'))}</label>
         <textarea class="control" id="reject-note" rows="3" placeholder="${esc(t('adminReasonPh'))}"></textarea>
       </div>`;
     $('#admin-modal-foot').innerHTML = `
       <button class="btn btn--ghost" type="button" data-admin-close>${esc(t('cancel'))}</button>
-      <button class="btn btn--danger" type="button" data-do-reject>${esc(t('adminReject'))}</button>`;
+      <div class="foot-gap"></div>
+      <button class="btn btn--danger" type="button" data-do-reject>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <span>${esc(t('adminReject'))}</span>
+      </button>`;
     openEditor();
 
     $('#admin-modal-body').querySelectorAll('[data-reason]').forEach(b => b.addEventListener('click', () => {
@@ -210,21 +288,11 @@
 
     $('#admin-modal-foot').querySelector('[data-do-reject]').addEventListener('click', () => {
       const reason = ($('#reject-note').value || '').trim() || t('rjIncomplete');
-      const item = store.transition(id, 'rejected', { rejectReason: reason });
+      store.transition(id, 'rejected', { rejectReason: reason });
       closeEditor();
       render();
       if (window.MPApp) MPApp.refresh();
       toast(t('adminRejectedToast'), 'info');
-
-      if (item && item.owner && item.owner.phone) {
-        const msg = t('waReject', { id, title: loc(item.title), reason });
-        const el = document.createElement('div');
-        el.className = 'toast toast--info toast--action';
-        el.innerHTML = `<span>${esc(t('adminNotifyOwner'))}</span>
-          <a class="btn btn--wa btn--sm" href="${esc(waTo(item.owner.phone, msg))}" target="_blank" rel="noopener noreferrer">${esc(t('whatsapp'))}</a>`;
-        $('#toasts').appendChild(el);
-        setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, 9000);
-      }
     });
   }
 
@@ -261,6 +329,7 @@
     const opt = (val, label, cur) => `<option value="${esc(val)}"${String(cur) === String(val) ? ' selected' : ''}>${esc(label)}</option>`;
 
     $('#admin-modal-body').innerHTML = `
+      ${timeline(p)}
       <div class="rev-grid">
         <div class="rev-preview">
           <div class="rev-gal" id="rev-gal">
@@ -283,9 +352,12 @@
           <p class="rev-desc">${esc(loc(p.description) || t('noDescription'))}</p>
           ${p.amenities && p.amenities.length ? `<div class="amen-list">${p.amenities.map(a => `<span class="amen">${esc(amenityName(a))}</span>`).join('')}</div>` : ''}
           ${p.adminNotes ? `<div class="rev-note"><b>${esc(t('adminNotes'))}</b>${esc(p.adminNotes)}</div>` : ''}
+          ${p.publisher && p.publisher.email ? `<div class="rev-note"><b>${esc(t('pubTag'))}</b>${esc(p.publisher.name || '')} · ${esc(p.publisher.email)}</div>` : ''}
         </div>
 
         <div class="rev-form">
+          <fieldset class="fset">
+          <legend><span>1</span><b>${esc(t('adminFieldTitle'))}</b></legend>
           <div class="field">
             <label for="rv-title">${esc(t('adminFieldTitle'))} <span class="req">*</span></label>
             <input class="control" id="rv-title" value="${esc(loc(p.title))}" />
@@ -354,6 +426,10 @@
             </div>
           </div>
 
+          </fieldset>
+
+          <fieldset class="fset">
+          <legend><span>2</span><b>${esc(t('photosLabel'))} · ${esc(t('amenitiesH'))}</b></legend>
           <div class="field">
             <label for="rv-desc">${esc(t('adminFieldDesc'))}</label>
             <textarea class="control" id="rv-desc" rows="3">${esc(loc(p.description))}</textarea>
@@ -376,6 +452,10 @@
             </label>
           </div>
 
+          </fieldset>
+
+          <fieldset class="fset">
+          <legend><span>3</span><b>${esc(t('adminFieldOwner'))}</b></legend>
           <div class="frow">
             <div class="field">
               <label for="rv-owner">${esc(t('adminFieldOwner'))}</label>
@@ -393,14 +473,25 @@
           </div>
 
           ${p.rejectReason ? `<div class="rev-note rev-note--err"><b>${esc(t('adminRejectedBecause'))}</b>${esc(p.rejectReason)}</div>` : ''}
+          </fieldset>
         </div>
       </div>`;
 
     $('#admin-modal-foot').innerHTML = `
-      <button class="btn btn--ghost btn--danger" type="button" data-foot-reject>${esc(t('adminReject'))}</button>
+      <button class="btn btn--ghost" type="button" data-foot-save>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        <span>${esc(t('adminSave'))}</span>
+      </button>
       <div class="foot-gap"></div>
-      <button class="btn btn--ghost" type="button" data-foot-save>${esc(t('adminSave'))}</button>
-      <button class="btn btn--ok" type="button" data-foot-accept>${esc(t('adminAcceptPublish'))}</button>`;
+      <span class="foot-hint">${esc(t('adminDecideHint'))}</span>
+      <button class="btn btn--danger" type="button" data-foot-reject>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <span>${esc(t('adminReject'))}</span>
+      </button>
+      <button class="btn btn--ok" type="button" data-foot-accept>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg>
+        <span>${esc(t('adminAcceptPublish'))}</span>
+      </button>`;
 
     openEditor();
     bindEditor(p);
@@ -629,6 +720,19 @@
     }));
 
     $('#admin-list').addEventListener('click', e => {
+      const mdel = e.target.closest('[data-msg-del]');
+      if (mdel) {
+        if (store.delMsg) store.delMsg(mdel.dataset.msgDel);
+        render();
+        toast(t('msgDeleted'), 'info');
+        return;
+      }
+      const mopen = e.target.closest('[data-msg-open]');
+      if (mopen) {
+        const pid = mopen.dataset.msgOpen;
+        if (window.MPApp && MPApp.openDetail) MPApp.openDetail(pid);
+        return;
+      }
       const acc = e.target.closest('[data-accept]');
       if (acc) { accept(acc.dataset.accept); return; }
       const rej = e.target.closest('[data-reject]');

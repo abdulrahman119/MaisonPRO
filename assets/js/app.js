@@ -28,12 +28,16 @@
   /* ---------- state ---------- */
   const S = {
     deal: 'all', type: 'all', district: 'all',
-    budget: 0, beds: 0, q: '', sort: 'newest',
+    min: 0, max: 0, beds: 0, baths: 0, amens: [],
+    q: '', sort: 'newest',
     cur: 'DJF', favsOnly: false, shown: CFG.pageSize || 6
   };
 
   let LIST = [];
   let FAVS = store.get(KEY_FAV, []);
+  const KEY_CMP = 'mp:cmp:v1';
+  let CMP = store.get(KEY_CMP, []).filter(id => LIST.some(x => x.id === id)).slice(0, 3);
+  let mapEmbedUrl = '';
   let lastFocus = null;
   let openId = null;
   let galIdx = 0;
@@ -64,28 +68,6 @@
   }
   function dealWord(p) {
     return p.deal === 'rent' ? t('tagRent') : p.deal === 'daily' ? t('tagDaily') : t('tagSale');
-  }
-
-  /* ---------- whatsapp ---------- */
-  function waLink(msg) {
-    const phone = String(CFG.whatsapp || '').replace(/\D/g, '');
-    return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-  }
-  function propertyMsg(p) {
-    return t('waProperty', {
-      title: loc(p.title),
-      id: p.id,
-      district: districtName(p.district),
-      deal: dealWord(p),
-      price: fmt(priceOf(p)) + (p.deal === 'sale' ? '' : ' ' + unitLabel(p))
-    });
-  }
-  function hydrateWa() {
-    $$('.js-wa').forEach(a => {
-      a.href = waLink(t('waGeneral'));
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-    });
   }
 
   /* ---------- toast ---------- */
@@ -124,19 +106,11 @@
     fill($('#o-type'), TYPES.map(x => ({ value: x.id, label: loc(x) })), null, null, null);
     fill($('#o-district'), DISTRICTS.map(d => ({ value: d.id, label: loc(d) })), null, null, null);
 
-    /* budget presets adapt to the deal type */
-    const presets = S.deal === 'sale'
-      ? [20000000, 40000000, 60000000, 80000000]
-      : S.deal === 'daily'
-        ? [8000, 15000, 25000, 40000]
-        : [150000, 300000, 500000, 800000];
-    const sel = $('#f-budget');
-    if (sel) {
-      const cur = S.budget;
-      sel.innerHTML = `<option value="0">${esc(t('budgetAll'))}</option>`
-        + presets.map(v => `<option value="${v}">\u2264 ${esc(money(v).c ? num(v) + ' DJF' : money(v).v)}</option>`).join('');
-      sel.value = String(cur);
-      if (!sel.value) sel.value = '0';
+    /* amenity filter chips */
+    const fa = $('#f-amens');
+    if (fa) {
+      fa.innerHTML = Object.keys(AMENITIES || {}).map(a =>
+        `<button type="button" class="chip famen${S.amens.includes(a) ? ' is-on' : ''}" data-famen="${esc(a)}" aria-pressed="${S.amens.includes(a)}"><span>${esc(amenityName(a))}</span></button>`).join('');
     }
 
     /* footer types + areas */
@@ -151,6 +125,21 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
         ${esc(loc(d))}<b>${n}</b></button>`;
     }).join('');
+
+    /* category chips */
+    const catRow = $('#cat-row');
+    if (catRow) {
+      const ic = {
+        all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+        daily: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'
+      };
+      catRow.innerHTML =
+        `<button type="button" class="cat" data-pill="type">${ic.all}<span>${esc(t('dealAll'))}</span></button>` +
+        TYPES.map(x => `<button type="button" class="cat" data-type-link="${esc(x.id)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M9 21v-8h6v8"/></svg>
+          <span>${esc(loc(x))}</span></button>`).join('') +
+        `<button type="button" class="cat" data-quick="all|daily">${ic.daily}<span>${esc(t('dealDaily'))}</span></button>`;
+    }
 
     /* amenity picker */
     const am = $('#amens');
@@ -169,9 +158,11 @@
     if (S.type !== 'all' && p.type !== S.type) return false;
     if (S.district !== 'all' && p.district !== S.district) return false;
     if (S.beds && (p.rooms || 0) < S.beds) return false;
-    if (S.budget) {
-      if ((S.deal === 'daily' ? (p.nightly || p.price) : p.price) > S.budget) return false;
-    }
+    if (S.baths && (p.baths || 0) < S.baths) return false;
+    const pr = S.deal === 'daily' ? (p.nightly || p.price) : p.price;
+    if (S.min && pr < S.min) return false;
+    if (S.max && pr > S.max) return false;
+    if (S.amens.length && !S.amens.every(a => (p.amenities || []).includes(a))) return false;
     if (S.q) {
       const hay = [
         p.id, loc(p.title), p.title.ar, p.title.fr, p.title.en,
@@ -213,11 +204,11 @@
     </button>
   </div>
   <div class="card-body">
+    <h3 class="card-title">${esc(loc(p.title))}</h3>
     <span class="card-loc">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
       ${esc(districtName(p.district))}
     </span>
-    <h3 class="card-title">${esc(loc(p.title))}</h3>
     <div class="card-specs">
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 18h18M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>${esc(p.rooms === 1 ? t('cRooms1') : t('cRooms', { n: p.rooms }))}</span>
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4Z"/><path d="M6 12V6a2 2 0 0 1 4 0"/><path d="M6 19v2M18 19v2"/></svg>${esc(p.baths === 1 ? t('cBaths1') : t('cBaths', { n: p.baths }))}</span>
@@ -229,14 +220,13 @@
         <div class="s">${esc(unitLabel(p))}</div>
       </div>
       <div class="card-cta">
-        <button class="btn btn--ghost" type="button" data-detail="${esc(p.id)}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
+        <button class="icon-btn cmp-btn${CMP.includes(p.id) ? ' is-on' : ''}" type="button" data-cmp="${esc(p.id)}"
+                aria-pressed="${CMP.includes(p.id)}" aria-label="${esc(t('cmpAdd'))}" title="${esc(t('cmpAdd'))}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M5 8v8l7 5 7-5V8"/></svg>
+        </button>
+        <button class="btn btn--outline" type="button" data-detail="${esc(p.id)}">
           <span>${esc(t('details'))}</span>
         </button>
-        <a class="btn btn--wa" href="${esc(waLink(propertyMsg(p)))}" target="_blank" rel="noopener noreferrer"
-           aria-label="WhatsApp — ${esc(loc(p.title))}">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.42.25-.69.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.89 9.89-9.89 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.89-9.88 9.89m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.94L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9a11.82 11.82 0 0 0-3.48-8.41Z"/></svg>
-        </a>
       </div>
     </div>
   </div>
@@ -284,6 +274,7 @@
 
     renderPills();
     syncUI();
+    observeReveals();
   }
 
   function renderPills() {
@@ -299,7 +290,9 @@
     if (S.type !== 'all') out.push(pill(typeName(S.type), 'type'));
     if (S.district !== 'all') out.push(pill(districtName(S.district), 'district'));
     if (S.beds) out.push(pill(S.beds + '+ ' + t('roomsLabel'), 'beds'));
-    if (S.budget) out.push(pill('≤ ' + fmt(S.budget), 'budget'));
+    if (S.baths) out.push(pill(S.baths + '+ ' + t('fBaths'), 'baths'));
+    if (S.min || S.max) out.push(pill((S.min ? fmt(S.min) : '0') + ' – ' + (S.max ? fmt(S.max) : '∞'), 'range'));
+    if (S.amens.length) out.push(pill(S.amens.map(a => amenityName(a)).join(' + '), 'amens'));
     if (S.q) out.push(pill('“' + S.q + '”', 'q'));
     if (S.favsOnly) out.push(pill(t('favorites'), 'favs'));
     box.innerHTML = out.join('');
@@ -311,16 +304,30 @@
     set('#f-type', S.type);
     set('#f-district', S.district);
     set('#f-sort', S.sort);
-    set('#f-budget', S.budget);
+    set('#f-min', S.min || '');
+    set('#f-max', S.max || '');
+    set('#f-baths', S.baths);
+    $$('.famen').forEach(c => {
+      const on = S.amens.includes(c.dataset.famen);
+      c.classList.toggle('is-on', on);
+      c.setAttribute('aria-pressed', String(on));
+    });
     set('#f-beds', S.beds);
     $$('[data-cur]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cur === S.cur)));
     const ft = $('#fav-toggle');
     if (ft) { ft.classList.toggle('is-on', S.favsOnly); ft.setAttribute('aria-pressed', String(S.favsOnly)); }
     $$('.chip[data-quick]').forEach(c => c.classList.remove('is-on'));
+    $$('.cat').forEach(c => {
+      let on = false;
+      if (c.dataset.pill === 'type') on = (S.type === 'all' && S.deal !== 'daily');
+      else if (c.dataset.typeLink) on = (S.type === c.dataset.typeLink);
+      else if (c.dataset.quick) on = (S.deal === 'daily');
+      c.classList.toggle('is-on', on);
+    });
   }
 
   function reset(silent) {
-    Object.assign(S, { deal: 'all', type: 'all', district: 'all', budget: 0, beds: 0, q: '', sort: 'newest', favsOnly: false, shown: CFG.pageSize || 6 });
+    Object.assign(S, { deal: 'all', type: 'all', district: 'all', min: 0, max: 0, beds: 0, baths: 0, amens: [], q: '', sort: 'newest', favsOnly: false, shown: CFG.pageSize || 6 });
     const s = $('#f-search'); if (s) s.value = '';
     fillOptions();
     render();
@@ -335,6 +342,120 @@
       <small>${esc(label)}</small>
       <strong${ltr ? ' dir="ltr" style="display:inline-block"' : ''}>${esc(value)}</strong>
     </span></div>`;
+  }
+
+  /* ---------- compare ---------- */
+  function cmpToggle(id) {
+    if (CMP.includes(id)) CMP = CMP.filter(x => x !== id);
+    else {
+      if (CMP.length >= 3) { toast(t('cmpMax'), 'err'); return; }
+      CMP.push(id);
+    }
+    store.set(KEY_CMP, CMP);
+    renderCmpBar();
+    render();
+    if (openId) { const p = find(openId); if (p) renderDetail(p); }
+  }
+
+  function renderCmpBar() {
+    const bar = $('#cmp-bar');
+    if (!bar) return;
+    bar.hidden = CMP.length === 0;
+    const box = $('#cmp-thumbs');
+    if (box) box.innerHTML = CMP.map(id => {
+      const p = find(id);
+      if (!p) return '';
+      return `<span class="cmp-chip"><img src="${esc(img(p.images && p.images[0] ? p.images[0] : 'villa-2', 480))}" alt="" /><button type="button" data-cmp-del="${esc(id)}" aria-label="${esc(t('cmpRemove'))}">✕</button></span>`;
+    }).join('');
+    const gt = $('#cmp-go-txt');
+    if (gt) gt.textContent = t('cmpGo') + ' (' + CMP.length + ')';
+  }
+
+  function openCmp() {
+    const props = CMP.map(id => find(id)).filter(Boolean);
+    if (props.length < 2) { toast(t('cmpNeed2'), 'err'); return; }
+    const priceCell = (p) => {
+      const m = money(priceOf(p));
+      return esc(m.v) + ' <small>' + esc(m.c) + '</small><br><span class="cmp-unit">' + esc(unitLabel(p)) + '</span>';
+    };
+    const rows = [
+      [t('adminFieldPrice'), priceCell],
+      [t('sType'), p => esc(typeName(p.type))],
+      [t('district'), p => esc(districtName(p.district))],
+      [t('sRooms'), p => num(p.rooms)],
+      [t('sBaths'), p => num(p.baths)],
+      [t('sArea'), p => num(p.area) + ' m²'],
+      [t('amenitiesH'), p => String((p.amenities || []).length)],
+      ['', p => `<button class="btn btn--primary btn--sm" type="button" data-detail="${esc(p.id)}"><span>${esc(t('details'))}</span></button>`]
+    ];
+    $('#cmp-body').innerHTML = `
+      <table class="cmp-table">
+        <thead><tr><th></th>${props.map(p => `<th>
+          <img src="${esc(img(p.images && p.images[0] ? p.images[0] : 'villa-2', 480))}" alt="" />
+          <span>${esc(loc(p.title))}</span></th>`).join('')}</tr></thead>
+        <tbody>${rows.map(([lab, fn]) => `<tr><th>${esc(lab)}</th>${props.map(p => `<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>`;
+    const m = $('#cmp-modal');
+    m.classList.add('is-open');
+    m.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCmp() {
+    const m = $('#cmp-modal');
+    if (!m || !m.classList.contains('is-open')) return;
+    m.classList.remove('is-open');
+    m.setAttribute('aria-hidden', 'true');
+    if (!$('#modal').classList.contains('is-open')) document.body.style.overflow = '';
+  }
+
+  function loadMap() {
+    const em = $('#map-embed');
+    if (!em || em.querySelector('iframe') || !mapEmbedUrl) return;
+    em.innerHTML = '<iframe title="map" loading="lazy" src="' + mapEmbedUrl + '"></iframe>';
+    em.classList.add('is-on');
+  }
+
+  function mapCard(p) {
+    const d = (window.DISTRICTS || []).find(x => x.id === p.district) || {};
+    const cc = d.coords || [11.592, 43.145];
+    const gmaps = 'https://www.google.com/maps/search/?api=1&query=' + cc[0] + ',' + cc[1];
+    mapEmbedUrl = 'https://www.openstreetmap.org/export/embed.html?bbox=' +
+      (cc[1] - 0.012) + ',' + (cc[0] - 0.008) + ',' + (cc[1] + 0.012) + ',' + (cc[0] + 0.008) +
+      '&layer=mapnik&marker=' + cc[0] + ',' + cc[1];
+    return `
+      <div class="map-card">
+        <div class="map-art" aria-hidden="true">
+          <svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice">
+            <rect width="400" height="160" fill="#EAF2EC"/>
+            <path d="M-10 110 L410 80" stroke="#fff" stroke-width="14"/>
+            <path d="M-10 110 L410 80" stroke="#D8E2DA" stroke-width="1.5"/>
+            <path d="M60 -10 L110 170" stroke="#fff" stroke-width="11"/>
+            <path d="M250 -10 L220 170" stroke="#fff" stroke-width="9"/>
+            <path d="M-10 40 L410 25" stroke="#fff" stroke-width="7"/>
+            <rect x="300" y="95" width="70" height="45" fill="#DCE8DF"/>
+            <rect x="130" y="100" width="55" height="30" fill="#DCE8DF"/>
+          </svg>
+          <span class="map-pin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+        </div>
+        <div class="map-info">
+          <div>
+            <strong>${esc(districtName(p.district))}</strong>
+            <span>${esc(getLang() === 'ar' ? CFG.addressAr : CFG.addressFr)}</span>
+            <small>${esc(t('mapNote'))}</small>
+          </div>
+          <div class="map-actions">
+            <a class="btn btn--outline btn--sm" href="${esc(gmaps)}" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>${esc(t('mapOpen'))}</span>
+            </a>
+            <button class="btn btn--link btn--sm" type="button" data-map-load>${esc(t('mapLoad'))}</button>
+          </div>
+        </div>
+        <div class="map-embed" id="map-embed"></div>
+      </div>`;
   }
 
   function renderDetail(p) {
@@ -418,7 +539,7 @@
 
   <div class="d-block">
     <h4>${esc(t('location'))}</h4>
-    <p>${esc(districtName(p.district))}, ${esc(getLang() === 'ar' ? CFG.addressAr : CFG.addressFr)}</p>
+    ${mapCard(p)}
   </div>
 
   <div class="agent">
@@ -431,19 +552,32 @@
   </div>
 
   <div class="d-actions">
-    <a class="btn btn--wa" href="${esc(waLink(propertyMsg(p)))}" target="_blank" rel="noopener noreferrer">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.89 9.89-9.89 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.89-9.88 9.89m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.94L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9a11.82 11.82 0 0 0-3.48-8.41Z"/></svg>
-      <span>${esc(t('contactWhatsapp'))}</span>
-    </a>
-    <a class="btn btn--ghost" href="tel:${esc(String(p.owner ? p.owner.phone : CFG.whatsapp).replace(/\D/g, ''))}">
+    <button class="btn btn--primary" type="button" data-view-req="${esc(p.id)}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/><path d="m9 16 2 2 4-4"/></svg>
+      <span>${esc(t('askView'))}</span>
+    </button>
+    <a class="btn btn--outline" href="tel:${esc(String(p.owner ? p.owner.phone : (CFG.phone || '')).replace(/\D/g, ''))}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 1 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2Z"/></svg>
       <span>${esc(t('call'))}</span>
     </a>
-    <button class="btn btn--ghost" type="button" id="share-btn" aria-label="${esc(t('share'))}">
+    <button class="btn btn--outline" type="button" id="share-btn" aria-label="${esc(t('share'))}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
     </button>
+    <button class="btn btn--outline${CMP.includes(p.id) ? ' is-on' : ''}" type="button" data-cmp="${esc(p.id)}" aria-pressed="${CMP.includes(p.id)}" aria-label="${esc(t('cmpAdd'))}" title="${esc(t('cmpAdd'))}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M5 8v8l7 5 7-5V8"/></svg>
+    </button>
   </div>
-</div>`;
+  ${similarBlock(p)}`;
+  }
+
+  function similarBlock(p) {
+    const sim = LIST.filter(x => x.id !== p.id && (x.type === p.type || x.district === p.district)).slice(0, 3);
+    if (!sim.length) return '';
+    return `
+  <div class="d-block sim-block">
+    <h4>${esc(t('similarTitle'))}</h4>
+    <div class="sim-grid">${sim.map(card).join('')}</div>
+  </div>`;
   }
 
   function galTo(i) {
@@ -459,6 +593,8 @@
   function openDetail(id) {
     const p = find(id);
     if (!p) return;
+    closeCmp();
+    if (ST && ST.bumpViews) ST.bumpViews(id);
     lastFocus = document.activeElement;
     renderDetail(p);
     const m = $('#modal');
@@ -567,6 +703,13 @@
 
   function submit(e) {
     e.preventDefault();
+    const me = ST ? ST.pUser() : null;
+    if (!me) {
+      const gate = $('#pub-gate');
+      if (gate) gate.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast(t('pubSub'), 'err');
+      return;
+    }
     if (!validate()) { toast(t('toastFix'), 'err'); return; }
 
     const deal = $('#o-deal').value;
@@ -588,6 +731,7 @@
       images: photos.length ? photos.slice(0, 4) : ['villa-2'],
       amenities: [...selectedAmens],
       owner: { name: $('#o-name').value.trim(), phone: $('#o-phone').value.replace(/\D/g, '') },
+      publisher: { id: me.id, name: me.name, email: me.email },
       submitted: true
     };
 
@@ -609,18 +753,6 @@
     if (window.MPAdmin) MPAdmin.render();
     toast(t('toastSent'), 'ok');
 
-    const msg = [
-      'طلب إضافة عقار / Nouvelle annonce',
-      '',
-      '🏠 ' + title,
-      '🔖 ' + p.id,
-      '📍 ' + districtName(district) + ' — ' + dealWord(p),
-      '💰 ' + fmt(price) + (deal === 'sale' ? '' : ' ' + unitLabel(p)),
-      nightly ? '🌙 ' + num(nightly) + ' DJF' : '',
-      '👤 ' + p.owner.name + ' — ' + $('#o-phone').value.trim()
-    ].filter(Boolean).join('\n');
-
-    $$('[data-wa="success"]').forEach(a => { a.href = waLink(msg); a.target = '_blank'; a.rel = 'noopener noreferrer'; });
     $('#add-property').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -634,6 +766,7 @@
     $('#add-form').style.display = '';
     $('#success').classList.remove('is-on');
     $('#o-price-usd').value = '';
+    prefillOwner();
   }
 
   /* ---------- modal / drawer helpers ---------- */
@@ -661,7 +794,7 @@
     const onScroll = () => {
       if (raf) return;
       raf = requestAnimationFrame(() => {
-        header.classList.toggle('is-stuck', window.scrollY > 4);
+        header.classList.toggle('is-solid', window.scrollY > 30 || document.body.classList.contains('is-admin'));
         raf = 0;
       });
     };
@@ -695,7 +828,7 @@
     /* search panel */
     $$('[data-deal]').forEach(b => b.addEventListener('click', () => {
       S.deal = b.dataset.deal;
-      S.budget = 0;
+      S.min = 0; S.max = 0;
       S.shown = CFG.pageSize || 6;
       fillOptions();
       render();
@@ -704,7 +837,9 @@
 
     $('#f-type').addEventListener('change', e => { S.type = e.target.value; S.shown = CFG.pageSize || 6; render(); });
     $('#f-district').addEventListener('change', e => { S.district = e.target.value; S.shown = CFG.pageSize || 6; render(); });
-    $('#f-budget').addEventListener('change', e => { S.budget = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
+    $('#f-min').addEventListener('input', e => { S.min = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
+    $('#f-max').addEventListener('input', e => { S.max = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
+    $('#f-baths').addEventListener('change', e => { S.baths = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
     $('#f-beds').addEventListener('change', e => { S.beds = Number(e.target.value) || 0; S.shown = CFG.pageSize || 6; render(); });
     $('#f-sort').addEventListener('change', e => { S.sort = e.target.value; render(); });
     $('#f-search').addEventListener('input', e => { S.q = e.target.value; S.shown = CFG.pageSize || 6; render(); });
@@ -720,19 +855,6 @@
       extra.hidden = !open;
       e.currentTarget.setAttribute('aria-expanded', String(open));
     });
-
-    $$('[data-quick]').forEach(b => b.addEventListener('click', () => {
-      const [a, deal] = b.dataset.quick.split('|');
-      S.deal = deal; S.budget = 0; S.beds = 0;
-      if (TYPES.some(x => x.id === a)) { S.type = a; S.district = 'all'; }
-      else { S.district = a; S.type = 'all'; }
-      S.favsOnly = false;
-      S.shown = CFG.pageSize || 6;
-      fillOptions(); render();
-      $$('.chip[data-quick]').forEach(c => c.classList.remove('is-on'));
-      b.classList.add('is-on');
-      $('#properties').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }));
 
     /* toolbar */
     $$('[data-cur]').forEach(b => b.addEventListener('click', () => {
@@ -763,7 +885,9 @@
         if (k === 'type') S.type = 'all';
         if (k === 'district') S.district = 'all';
         if (k === 'beds') S.beds = 0;
-        if (k === 'budget') S.budget = 0;
+        if (k === 'baths') S.baths = 0;
+        if (k === 'range') { S.min = 0; S.max = 0; }
+        if (k === 'amens') S.amens = [];
         if (k === 'q') { S.q = ''; $('#f-search').value = ''; }
         if (k === 'favs') S.favsOnly = false;
         fillOptions(); render();
@@ -777,15 +901,41 @@
         $('#properties').scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
+      const quick = e.target.closest('[data-quick]');
+      if (quick) {
+        const [a, deal] = quick.dataset.quick.split('|');
+        S.deal = deal; S.min = 0; S.max = 0; S.beds = 0; S.baths = 0; S.amens = [];
+        if (TYPES.some(x => x.id === a)) { S.type = a; S.district = 'all'; }
+        else { S.district = a; S.type = 'all'; }
+        S.favsOnly = false;
+        S.shown = CFG.pageSize || 6;
+        fillOptions(); render();
+        $('#properties').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
       const tlink = e.target.closest('[data-type-link]');
       if (tlink) {
-        S.type = tlink.dataset.typeLink; S.deal = 'all'; S.budget = 0; S.beds = 0;
+        S.type = tlink.dataset.typeLink; S.deal = 'all'; S.min = 0; S.max = 0; S.beds = 0; S.baths = 0; S.amens = [];
         S.shown = CFG.pageSize || 6;
         fillOptions(); render();
         return;
       }
       if (e.target.closest('[data-reset]')) { reset(true); return; }
 
+      const cm = e.target.closest('[data-cmp]');
+      if (cm) { e.stopPropagation(); cmpToggle(cm.dataset.cmp); return; }
+      const cdel = e.target.closest('[data-cmp-del]');
+      if (cdel) { e.stopPropagation(); cmpToggle(cdel.dataset.cmpDel); return; }
+      const ml = e.target.closest('[data-map-load]');
+      if (ml) { loadMap(); ml.remove(); return; }
+      const fam = e.target.closest('[data-famen]');
+      if (fam) {
+        const a = fam.dataset.famen;
+        S.amens = S.amens.includes(a) ? S.amens.filter(x => x !== a) : S.amens.concat(a);
+        S.shown = CFG.pageSize || 6;
+        render();
+        return;
+      }
       const fav = e.target.closest('[data-fav]');
       if (fav) { e.stopPropagation(); toggleFav(fav.dataset.fav); return; }
 
@@ -796,6 +946,34 @@
       if (cardEl && !e.target.closest('a,button')) { openDetail(cardEl.dataset.id); }
     });
 
+    const cmpGo = $('#cmp-go');
+    if (cmpGo) cmpGo.addEventListener('click', openCmp);
+    const cmpClr = $('#cmp-clear');
+    if (cmpClr) cmpClr.addEventListener('click', () => {
+      CMP = [];
+      store.set(KEY_CMP, CMP);
+      renderCmpBar();
+      render();
+    });
+    $('#cmp-modal').addEventListener('click', e => {
+      if (e.target.closest('[data-cmp-close]')) closeCmp();
+    });
+
+    /* swipe gallery */
+    let swX = null;
+    $('#modal').addEventListener('touchstart', e => {
+      if (e.target.closest('.gal-main')) swX = e.touches[0].clientX;
+    }, { passive: true });
+    $('#modal').addEventListener('touchend', e => {
+      if (swX === null) return;
+      const dx = e.changedTouches[0].clientX - swX;
+      swX = null;
+      if (Math.abs(dx) > 42) {
+        const rtl = document.documentElement.dir === 'rtl';
+        galTo(galIdx + (((dx < 0) === rtl) ? 1 : -1));
+      }
+    }, { passive: true });
+
     /* modal */
     $('#modal').addEventListener('click', e => {
       if (e.target.closest('[data-close]')) { closeDetail(); return; }
@@ -803,6 +981,13 @@
       if (g) { galTo(galIdx + Number(g.dataset.gal)); return; }
       const th = e.target.closest('[data-thumb]');
       if (th) { galTo(Number(th.dataset.thumb)); return; }
+      const vr = e.target.closest('[data-view-req]');
+      if (vr) { openContactWithRef(vr.dataset.viewReq); return; }
+      if (e.target.id === 'gal-img') {
+        const gm = e.target.closest('.gal-main');
+        if (gm) gm.classList.toggle('is-zoom');
+        return;
+      }
       if (e.target.closest('#share-btn')) {
         const url = location.href;
         if (navigator.share) {
@@ -818,6 +1003,7 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         if ($('#modal').classList.contains('is-open')) closeDetail();
+        if ($('#cmp-modal').classList.contains('is-open')) closeCmp();
         closeDrawer();
         closeLang();
       }
@@ -880,9 +1066,10 @@
 
     /* re-render on language change */
     document.addEventListener('langchange', () => {
+    pgLabel();
+    renderCmpBar();
       fillOptions();
       render();
-      hydrateWa();
       renderThumbs();
       if (openId) {
         const i = galIdx;
@@ -892,6 +1079,228 @@
     });
   }
 
+
+  /* ---------- publisher auth ---------- */
+  let pgMode = 'login';
+
+  function pgError(msg) {
+    const el = $('#pg-err');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.hidden = !msg;
+  }
+
+  function prefillOwner() {
+    const user = ST ? ST.pUser() : null;
+    if (!user) return;
+    const n = $('#o-name');
+    if (n && !n.value.trim()) n.value = user.name;
+  }
+
+  function refreshAuth() {
+    const user = ST ? ST.pUser() : null;
+    const gate = $('#pub-gate');
+    const form = $('#add-form');
+    const bar = $('#pub-bar');
+    if (!gate || !form) return;
+    gate.hidden = !!user;
+    if (bar) bar.hidden = !user;
+    form.hidden = !user;
+    form.style.display = '';
+    const succ = $('#success');
+    if (succ) succ.classList.remove('is-on');
+    if (user) {
+      const un = $('#pg-user'); if (un) un.textContent = user.name;
+      const um = $('#pg-mail'); if (um) um.textContent = user.email;
+      prefillOwner();
+    }
+  }
+
+  function pgLabel() {
+    const txt = $('#pg-submit-txt');
+    if (txt) txt.textContent = t(pgMode === 'register' ? 'pubCreate' : 'pubLogin');
+  }
+
+  function bindAuth() {
+    $$('[data-pg]').forEach(b => b.addEventListener('click', () => {
+      pgMode = b.dataset.pg;
+      $$('[data-pg]').forEach(x => x.classList.toggle('is-on', x === b));
+      const row = $('#pg-reg-row');
+      if (row) row.hidden = pgMode !== 'register';
+      pgLabel();
+      pgError('');
+    }));
+
+    const go = $('#pg-submit');
+    if (go) go.addEventListener('click', async () => {
+      pgError('');
+      const email = ($('#pg-email').value || '').trim();
+      const pw = $('#pg-pw').value || '';
+      if (!ST) return;
+      if (pgMode === 'register') {
+        const pw2 = $('#pg-pw2').value || '';
+        if (pw !== pw2) { pgError(t('pubErrMatch')); return; }
+        const r = await ST.register(($('#pg-name').value || '').trim(), email, pw);
+        if (r.err) { pgError(t(r.err === 'exists' ? 'pubErrExists' : 'pubErrNeed')); return; }
+        toast(t('pubOk'), 'ok');
+      } else {
+        const r = await ST.login(email, pw);
+        if (r.err) { pgError(t('pubErrBad')); return; }
+        toast(t('pubOk'), 'ok');
+      }
+      refreshAuth();
+      const sec = $('#add-property');
+      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    const out = $('#pg-logout');
+    if (out) out.addEventListener('click', () => {
+      if (ST) ST.pLogout();
+      refreshAuth();
+      toast(t('pubLogout'), 'info');
+    });
+  }
+
+  function initGoogle() {
+    const btn = $('#gbtn');
+    const hint = $('#pg-hint');
+    const cid = (window.SITE_CONFIG && SITE_CONFIG.googleClientId) || '';
+    if (!btn) return;
+    if (!cid) return; /* leave the hint visible, button hidden */
+    const boot = () => {
+      if (!window.google || !google.accounts || !google.accounts.id) return;
+      google.accounts.id.initialize({
+        client_id: cid,
+        callback: (res) => {
+          try {
+            const part = res.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(part));
+            const r = ST ? ST.loginGoogle({ email: payload.email, name: payload.name }) : null;
+            if (r && r.user) {
+              refreshAuth();
+              toast(t('pubOk'), 'ok');
+              pgError('');
+            }
+          } catch (err) { /* malformed token — ignore */ }
+        }
+      });
+      btn.hidden = false;
+      if (hint) hint.hidden = true;
+      google.accounts.id.renderButton(btn, {
+        theme: 'outline', size: 'large', width: 320, text: 'continue_with', shape: 'pill'
+      });
+    };
+    if (window.google && google.accounts) boot();
+    else {
+      const sc = document.createElement('script');
+      sc.src = 'https://accounts.google.com/gsi/client';
+      sc.async = true;
+      sc.defer = true;
+      sc.onload = boot;
+      document.head.appendChild(sc);
+    }
+  }
+
+  /* ---------- contact form ---------- */
+  function openContactWithRef(id) {
+    closeDetail();
+    const topic = $('#c-topic'); if (topic) topic.value = 'view';
+    const ref = $('#c-ref'); if (ref) ref.value = id || '';
+    const cf = $('#contact-form');
+    if (cf) { cf.style.display = ''; $('#contact-success').classList.remove('is-on'); }
+    const sec = $('#contact');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => { const n = $('#c-name'); if (n) n.focus({ preventScroll: true }); }, 480);
+  }
+
+  function bindContactForm() {
+    const cf = $('#contact-form');
+    if (cf) cf.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = $('#c-name').value.trim();
+      const phone = $('#c-phone').value.replace(/\D/g, '');
+      const msg = $('#c-msg').value.trim();
+      let first = null;
+      const check = (id, ok) => { fieldErr(id, !ok); if (!ok && !first) first = document.getElementById(id); };
+      check('c-name', name !== '');
+      check('c-phone', phone.length >= 8);
+      check('c-msg', msg !== '');
+      if (first) { first.focus(); first.scrollIntoView({ block: 'center' }); toast(t('toastFix'), 'err'); return; }
+
+      const item = ST ? ST.addMsg({
+        name, phone,
+        email: $('#c-email').value.trim(),
+        topic: $('#c-topic').value,
+        ref: $('#c-ref').value.trim(),
+        message: msg
+      }) : { id: 'MSG-0000' };
+
+      cf.style.display = 'none';
+      $('#contact-success').classList.add('is-on');
+      $('#contact-ref-out').textContent = item.id;
+      if (window.MPAdmin) MPAdmin.render();
+      toast(t('cfDone'), 'ok');
+    });
+
+    const again = $('#c-again');
+    if (again) again.addEventListener('click', () => {
+      const cf2 = $('#contact-form');
+      cf2.reset();
+      $$('.has-err').forEach(el => el.classList.remove('has-err'));
+      cf2.style.display = '';
+      $('#contact-success').classList.remove('is-on');
+    });
+  }
+
+  /* ---------- effects: reveal + counters ---------- */
+  function observeReveals() {
+    const io = window.__mpReveal;
+    if (!io) return;
+    $$('.sec-head, .card, .bento-item, .step, .c-card, .cta-strip, .hero-media').forEach(el => {
+      if (el.classList.contains('reveal') || el.classList.contains('in')) return;
+      el.classList.add('reveal');
+      io.observe(el);
+    });
+    /* failsafe: nothing may stay hidden */
+    clearTimeout(window.__mpRevealT);
+    window.__mpRevealT = setTimeout(() => $$('.reveal').forEach(el => el.classList.add('in')), 1700);
+  }
+
+  function bindEffects() {
+    if ('IntersectionObserver' in window && !window.__mpReveal) {
+      window.__mpReveal = new IntersectionObserver(entries => {
+        entries.forEach(en => {
+          if (en.isIntersecting) { en.target.classList.add('in'); window.__mpReveal.unobserve(en.target); }
+        });
+      }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    }
+    observeReveals();
+
+    /* animated hero counters */
+    $$('[data-count-to]').forEach(el => {
+      const target = Number(el.dataset.countTo) || 0;
+      if (!target) return;
+      let started = false;
+      const run = () => {
+        if (started) return;
+        started = true;
+        const t0 = performance.now();
+        const tick = (now) => {
+          const k = Math.min(1, (now - t0) / 1100);
+          el.textContent = String(Math.round(target * (1 - Math.pow(1 - k, 3))));
+          if (k < 1) requestAnimationFrame(tick);
+          else el.textContent = String(target);
+        };
+        requestAnimationFrame(tick);
+      };
+      if ('IntersectionObserver' in window) {
+        const io2 = new IntersectionObserver(es => {
+          es.forEach(e2 => { if (e2.isIntersecting) { run(); io2.disconnect(); } });
+        }, { threshold: 0.4 });
+        io2.observe(el);
+      } else run();
+    });
+  }
 
   /* ---------- admin & tracker wiring ---------- */
   function closeTrack() {
@@ -949,11 +1358,12 @@
 
   /* called by the admin panel after any moderation change */
   window.MPApp = {
+    openContactWithRef,
+    openDetail,
     refresh() {
       loadListings();
       fillOptions();
       render();
-      hydrateWa();
       if (openId) {
         const p = find(openId);
         if (p) renderDetail(p); else closeDetail();
@@ -990,8 +1400,13 @@
 
     fillOptions();
     render();
-    hydrateWa();
     bind();
+    bindContactForm();
+    renderCmpBar();
+    bindAuth();
+    refreshAuth();
+    initGoogle();
+    bindEffects();
     bindAdminRoutes();
 
     try {
