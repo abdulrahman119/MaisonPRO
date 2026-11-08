@@ -7,10 +7,16 @@
   command = "npm run build"
   publish = "dist"
 
+# ✅ استقبال طلبات «أضف عقارك» يعمل تلقائياً عبر Netlify Forms
+#    (النموذج المخفي data-netlify="true" في index.html) — لا تحتاج أي متغير.
+#    فعّل إشعارات البريد من: Site configuration → Forms → Form notifications
+#
 # [build.environment]
 #   SITE_URL        = "https://maisonpro.dj"          # عند ربط الدومين الخاص
 #   DEMO_MODE       = "0"                            # أطفئ الوضع التجريبي يوم الإطلاق
-#   FORMS_PROVIDER  = "formspree"
+#
+#   # ── بدائل اختيارية ──────────────────────────────────────────
+#   FORMS_PROVIDER  = "formspree"                    # أو supabase
 #   FORMS_ENDPOINT  = "https://formspree.io/f/XXXXXX"
 #   FORMS_API_KEY   = ""                             # للـ Supabase فقط (anon key)
 

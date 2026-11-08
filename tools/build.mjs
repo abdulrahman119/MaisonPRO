@@ -15,7 +15,7 @@
                        (على Netlify يُقرأ URL تلقائياً، وعلى Vercel
                         VERCEL_PROJECT_PRODUCTION_URL)
      DEMO_MODE         1 = افتراضي (شريط تنبيه + noindex) | 0 = إطلاق رسمي
-     FORMS_PROVIDER    none | formspree | supabase
+     FORMS_PROVIDER    none | netlify | formspree | supabase (يُستنتج تلقائياً على Netlify)
      FORMS_ENDPOINT    رابط استقبال طلبات «أضف عقارك»
      FORMS_API_KEY     مفتاح Supabase العام (anon) فقط — ليس مفتاحاً سرياً
    ========================================================= */
@@ -42,9 +42,28 @@ const SITE_URL = normalizeUrl(
   'https://maisonpro.dj'
 );
 const demoMode = !['0', 'false', 'no', 'off'].includes(String(env.DEMO_MODE ?? '1').toLowerCase());
-const provider = String(env.FORMS_PROVIDER || 'none').trim();
-const endpoint = String(env.FORMS_ENDPOINT || '').trim();
 const apiKey = String(env.FORMS_API_KEY || '').trim();
+
+/* Netlify يضبط هذه المتغيرات في بيئة البناء تلقائياً */
+const onNetlify = String(env.NETLIFY || '').toLowerCase() === 'true'
+  || !!env.BUILD_ID || !!env.DEPLOY_PRIME_URL;
+const onVercel = !!env.VERCEL || !!env.VERCEL_PROJECT_PRODUCTION_URL;
+
+/* استنتاج مزوّد النماذج: صريح > من رابط النقطة > Netlify Forms تلقائياً > محلي */
+function inferProvider(url) {
+  if (/supabase\.co/i.test(url)) return 'supabase';
+  if (/^https?:\/\//i.test(url)) return 'formspree';
+  if (/^\//.test(url)) return 'netlify';
+  return 'none';
+}
+let endpoint = String(env.FORMS_ENDPOINT || (onNetlify ? '/' : '')).trim();
+let provider = String(env.FORMS_PROVIDER || (endpoint ? inferProvider(endpoint) : (onNetlify ? 'netlify' : 'none'))).trim();
+if (provider === 'netlify' && !endpoint) endpoint = '/';
+const allowed = ['none', 'netlify', 'formspree', 'supabase'];
+if (!allowed.includes(provider)) {
+  console.warn('  ⚠ FORMS_PROVIDER غير معروف: ' + provider + ' — تم الرجوع إلى none');
+  provider = 'none';
+}
 
 /* ---------- 2. نسخ الملفات العامة فقط ---------- */
 const FILES = ['index.html', 'privacy.html', 'terms.html', '404.html', 'robots.txt', 'sitemap.xml'];
@@ -91,6 +110,18 @@ console.log('MaisonPRO build ✓');
 console.log('  dist/            → جاهز للنشر');
 console.log('  SITE_URL         → ' + SITE_URL);
 console.log('  DEMO_MODE        → ' + (demoMode ? '1 (شريط تنبيه + noindex)' : '0 (إطلاق رسمي)'));
-console.log('  FORMS_PROVIDER   → ' + (endpoint ? provider : 'none'));
+console.log('  FORMS_PROVIDER   → ' + provider + (onNetlify ? '  (Netlify Forms تلقائي)' : ''));
 console.log('  FORMS_ENDPOINT   → ' + (endpoint || 'غير مضبوط (حفظ محلي + واتساب)'));
-if (!endpoint) console.log('  ⚠ اضبط FORMS_ENDPOINT في لوحة الاستضافة قبل الإطلاق — راجع LAUNCH.md');
+if (provider === 'none') {
+  if (onVercel) {
+    console.log('  ⚠ على Vercel اضبط FORMS_ENDPOINT (Formspree/Supabase) وإلا ستبقى الطلبات محلية — راجع LAUNCH.md');
+  } else {
+    console.log('  ℹ وضع التطوير المحلي: حفظ محلي + واتساب. على Netlify يُفعّل Netlify Forms تلقائياً.');
+  }
+}
+if (provider === 'netlify' && !onNetlify) {
+  console.log('  ⚠ Netlify Forms يعمل على Netlify فقط — استخدم formspree أو supabase هنا');
+}
+if (provider === 'supabase' && !apiKey) {
+  console.log('  ⚠ Supabase يحتاج FORMS_API_KEY (anon key)');
+}

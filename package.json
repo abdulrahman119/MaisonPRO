@@ -6,7 +6,9 @@
   "scripts": {
     "build": "node tools/build.mjs",
     "serve": "python3 -m http.server 8080 --bind 0.0.0.0",
-    "check": "node tools/check.mjs"
+    "check": "node tools/check.mjs",
+    "test:forms": "node tools/test-forms.mjs",
+    "test": "node tools/check.mjs && node tools/test-forms.mjs"
   },
   "engines": {
     "node": ">=18"

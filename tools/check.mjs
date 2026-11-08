@@ -60,9 +60,37 @@ for (const f of htmlFiles) {
   if (dup.length) errors.push(`${f}: معرّفات مكررة → ${dup.join(', ')}`);
 }
 
+/* ---------- 2.5 تطابق حقول Netlify Forms مع حمولة النموذج ---------- */
+{
+  const app = read('assets/js/app.js');
+  const rowMatch = app.match(/const row = \{([\s\S]*?)\n    \};/);
+  const rowKeys = rowMatch
+    ? [...rowMatch[1].matchAll(/^\s*([a-z][a-z0-9_]*)\s*[:,]/gm)].map(m => m[1])
+    : [];
+  if (!rowKeys.length) errors.push('app.js: لم أستطع قراءة حقول الطلب (const row)');
+
+  const html = read('index.html');
+  const formMatch = html.match(/<form name="add-property"[^>]*>([\s\S]*?)<\/form>/);
+  if (!formMatch) {
+    errors.push('index.html: النموذج المخفي name="add-property" مفقود (لن يكتشف Netlify الطلبات)');
+  } else {
+    const tag = html.slice(html.indexOf('<form name="add-property"'), html.indexOf('>', html.indexOf('<form name="add-property"')));
+    if (!/data-netlify="true"/.test(tag)) errors.push('index.html: data-netlify="true" مفقود');
+    if (!/data-netlify-honeypot="bot-field"/.test(tag)) errors.push('index.html: حقل مكافحة السبام مفقود');
+    const names = new Set([...formMatch[1].matchAll(/name="([^"]+)"/g)].map(m => m[1]));
+    const missing = [...rowKeys, 'form-name', 'bot-field'].filter(k => !names.has(k));
+    if (missing.length) errors.push('index.html: حقول ناقصة في نموذج Netlify → ' + missing.join(', '));
+    notes.push(`Netlify Forms: ${names.size} حقلاً، ${rowKeys.length} حقلاً في الطلب`);
+  }
+  const formsSrc = read('assets/js/forms.js');
+  if (!/const FORM_NAME = 'add-property'/.test(formsSrc)) {
+    errors.push('forms.js: FORM_NAME لا يطابق اسم النموذج في index.html');
+  }
+}
+
 /* ---------- 3. ملفات أساسية ---------- */
 for (const f of ['index.html', 'privacy.html', 'terms.html', '404.html', 'robots.txt',
-                 'sitemap.xml', 'netlify.toml', 'vercel.json', 'README.md', 'LAUNCH.md']) {
+                 'sitemap.xml', 'netlify.toml', 'vercel.json', 'README.md', 'LAUNCH.md', 'tools/test-forms.mjs']) {
   if (!fs.existsSync(path.join(ROOT, f))) errors.push(`ملف أساسي مفقود: ${f}`);
 }
 

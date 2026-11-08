@@ -882,6 +882,35 @@
   </div>
 </noscript>
 
+<!-- ================= NETLIFY FORMS (hidden static form) =================
+     Netlify يكتشف النماذج من HTML الثابت وقت النشر. النموذج المرئي تُديره
+     JavaScript، لذلك نُعرّف هنا نسخة مخفية بنفس أسماء الحقول ليُسجّل
+     الطلب في لوحة Netlify ويصل إشعار بريد دون أي حساب خارجي.
+     لا تغيّر name="add-property" أو أسماء الحقول دون تحديث forms.js.
+-->
+<form name="add-property" method="POST" action="/" data-netlify="true" data-netlify-honeypot="bot-field" hidden aria-hidden="true">
+  <input type="text" name="form-name" value="add-property" />
+  <input type="text" name="bot-field" />
+  <input type="text" name="ref" />
+  <input type="text" name="title" />
+  <input type="text" name="deal" />
+  <input type="text" name="type" />
+  <input type="text" name="district" />
+  <input type="text" name="price_djf" />
+  <input type="text" name="nightly_djf" />
+  <input type="text" name="rooms" />
+  <input type="text" name="baths" />
+  <input type="text" name="area" />
+  <input type="text" name="amenities" />
+  <input type="text" name="description" />
+  <input type="text" name="owner_name" />
+  <input type="text" name="owner_phone" />
+  <input type="text" name="photo_count" />
+  <input type="text" name="lang" />
+  <input type="text" name="page_url" />
+  <input type="text" name="submitted_at" />
+</form>
+
 <script src="assets/js/runtime.js" defer></script>
 <script src="assets/js/data.js" defer></script>
 <script src="assets/js/i18n.js" defer></script>

@@ -1,7 +1,7 @@
 # خطة إطلاق MaisonPRO — خطوة بخطوة حتى النشر
 
 > وساطة عقارية في جيبوتي · آخر تحديث: **8 نوفمبر 2026**
-> الفرع: `arena/52ea3d01-maisonpro` · الدليل الكامل للتقنية في [`README.md`](README.md)
+> الفرع: `arena/fdde5b10-maisonpro` · الدليل الكامل للتقنية في [`README.md`](README.md)
 
 ---
 
@@ -11,7 +11,7 @@
 |---|---|
 | الأساس | إكمال وتطوير موقع MaisonPRO الموجود في المستودع (لا إعادة بناء) |
 | الاستضافة | **Netlify** أولاً (مع `vercel.json` جاهز كبديل) — دومين مؤقت ثم `maisonpro.dj` لاحقاً |
-| نطاق النسخة الأولى | MVP + ربط نموذج «أضف عقارك» بخدمة نماذج خارجية |
+| نطاق النسخة الأولى | MVP + استقبال طلبات «أضف عقارك» (Netlify Forms تلقائياً، وFormspree/Supabase كبديل) |
 | المحتوى | بيانات تجريبية مؤقتاً، مع **شريط تنبيه واضح** وعدم فهرسة الإعلانات الوهمية |
 
 ---
@@ -22,7 +22,7 @@
 |---|---|---|
 | 1 | فحص المستودع وتشغيل معاينة حيّة | ✅ تم |
 | 2 | تجهيز أساس النشر (بناء، استضافة، SEO، أمان، صفحات قانونية، تنبيه تجريبي) | ✅ تم |
-| 3 | ربط نموذج «أضف عقارك» بـ Formspree / Supabase | 👤 يحتاج منك 5 دقائق |
+| 3 | استقبال طلبات «أضف عقارك» | ✅ تم — تلقائي عبر Netlify Forms، تحتاج منك فقط تفعيل إشعار البريد |
 | 4 | استبدال البيانات التجريبية بالمحتوى الحقيقي | 👤 يحتاج منك |
 | 5 | استكمال بيانات الشركة في الصفحات القانونية | 👤 يحتاج منك |
 | 6 | النشر الفعلي على Netlify | 👤 يحتاج منك (الملفات جاهزة) |
@@ -52,11 +52,13 @@ python3 -m http.server 8080 --bind 0.0.0.0
 | `netlify.toml` | أمر البناء، مجلد النشر `dist`، ترويسات أمان + CSP، تخزين مؤقت للأصول، تحويلات مختصرة |
 | `vercel.json` | نفس الفكرة كبديل جاهز على Vercel |
 | `assets/js/runtime.js` | إعدادات وقت التشغيل (يُستبدل داخل `dist/` عند البناء — لا تضع أسراراً فيه) |
-| `assets/js/forms.js` | طبقة إرسال طلبات «أضف عقارك» إلى Formspree أو Supabase، مع مهلة 12 ثانية ورجوع آمن للوضع المحلي |
+| `assets/js/forms.js` | طبقة إرسال الطلبات إلى Netlify Forms / Formspree / Supabase، مع مهلة 12 ثانية ورجوع آمن للحفظ المحلي |
+| `index.html` (النموذج المخفي) | `data-netlify="true"` بنفس أسماء حقول الطلب لاكتشاف Netlify للنموذج وقت النشر |
 | `assets/css/launch.css` | شريط النسخة التجريبية + تنسيق الصفحات القانونية وصفحة 404 |
 | `privacy.html` / `terms.html` / `404.html` | صفحات الخصوصية والشروط وصفحة الخطأ (عربي + ملخّص FR/EN) |
-| `tools/check.mjs` | فحص آلي قبل الإطلاق: الترجمات الناقصة، الملفات المفقودة، المعرّفات المكررة |
-| `package.json` | `npm run build` و `npm run check` و `npm run serve` |
+| `tools/check.mjs` | فحص آلي: الترجمات، الملفات المفقودة، المعرّفات المكررة، وتطابق حقول Netlify Forms |
+| `tools/test-forms.mjs` | 7 اختبارات لطبقة الإرسال لكل مزوّد + الفشل والمهلة (بدون مكتبات ولا إنترنت) |
+| `package.json` | `npm run build` · `npm test` · `npm run check` · `npm run serve` |
 
 **تحسينات على الملف الأصلي:** توحيد `canonical` / `hreflang` / JSON-LD / `og:image` / `sitemap.xml` / `robots.txt` على نطاق واحد، إضافة `og:url`، إزالة معرّف `top` المكرر، ربط «شروط الخدمة» بصفحة حقيقية، وإضافة روابط قانونية في الفوتر.
 
@@ -66,33 +68,50 @@ python3 -m http.server 8080 --bind 0.0.0.0
 |---|---|---|
 | `SITE_URL` | `URL` من Netlify / `VERCEL_PROJECT_PRODUCTION_URL` | عنوان الموقع في canonical و sitemap وروابط المشاركة |
 | `DEMO_MODE` | `1` | `1` = شريط تنبيه + `noindex` للإعلانات الوهمية · `0` = إطلاق رسمي |
-| `FORMS_PROVIDER` | `none` | `none` \| `formspree` \| `supabase` |
-| `FORMS_ENDPOINT` | فارغ | رابط استقبال الطلبات |
+| `FORMS_PROVIDER` | `netlify` على Netlify · `none` محلياً/Vercel | `none` \| `netlify` \| `formspree` \| `supabase` (يُستنتج من الرابط إن لم يُضبط) |
+| `FORMS_ENDPOINT` | `/` على Netlify · فارغ في غير ذلك | رابط استقبال الطلبات |
 | `FORMS_API_KEY` | فارغ | مفتاح Supabase العام `anon` فقط |
 
 > ⚠️ لا تضع أي مفتاح **سري** في هذه المتغيرات: كلها تُحقن في ملف JavaScript يصل للمتصفح. مفتاح Supabase `anon` عام ومصمّم لذلك، أما `service_role` فلا يُستخدم أبداً هنا.
 
 ---
 
-## الخطوة 3 — ربط نموذج «أضف عقارك» 👤 (5 دقائق)
+## الخطوة 3 — استقبال طلبات «أضف عقارك» ✅
 
-### الخيار A — Formspree (الأسهل، موصى به)
+**تم التنفيذ بلا أي حساب خارجي.** بما أن الاستضافة المختارة هي Netlify، يكتشف `tools/build.mjs` بيئة Netlify ويضبط تلقائياً `FORMS_PROVIDER=netlify` و `FORMS_ENDPOINT=/`. في `index.html` يوجد نموذج ثابت مخفي `data-netlify="true"` بنفس أسماء حقول الطلب (18 حقلاً) ليكتشفه Netlify وقت النشر، و`forms.js` يرسل إليه بصيغة `form-urlencoded` مع `form-name` وحقل مكافحة السبام `bot-field`.
+
+### ما يحدث عند إرسال طلب
+
+1. `app.js` يبني الحمولة ويحفظ نسخة محلية (لمتابعة الحالة داخل نفس المتصفح).
+2. `forms.js` ينفّذ `POST /` إلى Netlify Forms بمهلة 12 ثانية.
+3. تظهر للمستخدم رسالة **«وصل الطلب إلى فريقنا بنجاح»** مع رقم الطلب وزر واتساب لمشاركة الصور.
+4. عند أي فشل (شبكة، خادم، مهلة) **لا يتعطل النموذج**: يُظهر «تعذّر الإرسال — حُفظ الطلب محلياً، أكّده عبر واتساب» ويبقى واتساب متاحاً.
+
+### ما تحتاجه منك بعد أول نشر (دقيقتان فقط)
+
+1. في Netlify: **Forms** → تأكد ظهور النموذج باسم `add-property` بعد اكتمال النشر.
+2. **Forms → Form notifications → Add notification → Email** واضبط بريد فريقك لتصلك الطلبات فوراً.
+3. أرسل طلباً تجريبياً من الموقع، وتحقق من ظهوره في تبويب **Forms → Submissions** ووصول الإشعار للبريد.
+
+> الحد المجاني لـ Netlify Forms هو **100 طلب/شهرياً لكل موقع**. إن تجاوزته أو أردت مزوّداً مستقلاً عن الاستضافة، استخدم أحد البديلين أدناه.
+
+**الحقول المُرسلة:** `ref, title, deal, type, district, price_djf, nightly_djf, rooms, baths, area, amenities, description, owner_name, owner_phone, photo_count, lang, page_url, submitted_at`.
+
+> **الصور لا تُرسل** عبر أي خدمة نماذج (حجم base64 كبير). تُضغط في متصفح الزائر وتبقى على جهازه، ويظهر له زر واتساب لمشاركتها مع الفريق. هذا موضّح في نص النموذج وسياسة الخصوصية.
+
+### الخيار B — Formspree (مزوّد مستقل)
 
 1. أنشئ حساباً على <https://formspree.io> → **New Form** → انسخ الرابط `https://formspree.io/f/abcdwxyz`.
-2. فعّل التحقق بالبريد في إعدادات النموذج، واضبط عنوان الاستلام على بريد فريقك.
-3. في Netlify: **Site configuration → Environment variables** أضف:
+2. في Netlify: **Site configuration → Environment variables** أضف:
    ```
    FORMS_PROVIDER = formspree
    FORMS_ENDPOINT = https://formspree.io/f/abcdwxyz
    ```
-4. أعد النشر (**Deploys → Trigger deploy → Clear cache and deploy**).
-5. املأ نموذج «أضف عقارك» في الموقع: يجب أن يظهر تنبيه **«وصل الطلب إلى فريقنا بنجاح»** وتصلك رسالة بالبريد تحمل رقم الطلب.
+3. أعد النشر (**Deploys → Trigger deploy → Clear cache and deploy**) واختبر إرسال طلب.
 
-الحقول المُرسلة: `ref, title, deal, type, district, price_djf, nightly_djf, rooms, baths, area, amenities, description, owner_name, owner_phone, photo_count, lang, page_url, submitted_at`.
+> يمكن حذف `FORMS_PROVIDER`: البناء يستنتج `formspree` تلقائياً من أي رابط `https://` غير Supabase.
 
-> **الصور لا تُرسل** عبر خدمة النماذج (حجم base64 كبير). تُضغط في متصفح الزائر وتبقى على جهازه، ويظهر له زر واتساب لمشاركتها مع الفريق. هذا موضّح للمستخدم في نص النموذج وسياسة الخصوصية.
-
-### الخيار B — Supabase (إن أردت قاعدة بيانات لاحقاً)
+### الخيار C — Supabase (قاعدة بيانات لاحقاً)
 
 ```sql
 create table public.submissions (
@@ -113,12 +132,24 @@ create policy "anon insert" on public.submissions
 
 ثم اضبط:
 ```
-FORMS_PROVIDER = supabase
 FORMS_ENDPOINT = https://XXXX.supabase.co/rest/v1/submissions
 FORMS_API_KEY  = <anon public key>
 ```
 
-> سياسة `insert` فقط: لا يمكن للزائر قراءة طلبات غيره. لا تضف سياسة `select` للـ `anon`.
+> البناء يستنتج `supabase` من الرابط. سياسة `insert` فقط: لا يمكن للزائر قراءة طلبات غيره. لا تضف سياسة `select` للـ `anon`، ولا تستخدم `service_role` أبداً في المتصفح.
+
+### ⚠️ إن نشرت على Vercel بدلاً من Netlify
+
+Netlify Forms يعمل على Netlify فقط. على Vercel يضبط البناء `FORMS_PROVIDER=none` تلقائياً، لذا **لا تنسَ** ضبط `FORMS_ENDPOINT` (Formspree أو Supabase) وإلا ستبقى الطلبات محلية فقط. البناء يطبع تحذيراً بذلك.
+
+### التحقق الآلي (لا يحتاج إنترنت ولا مفاتيح)
+
+```bash
+npm test              # فحص ثابت + 7 اختبارات لكل مزوّد وفشل الشبكة والمهلة
+npm run test:forms    # اختبارات طبقة الإرسال وحدها
+```
+
+`tools/check.mjs` يتأكد أيضاً أن كل حقل في `const row` موجود كـ `name` في النموذج المخفي، حتى لا يُسقط Netlify أي بيانات.
 
 ---
 
@@ -151,18 +182,20 @@ FORMS_API_KEY  = <anon public key>
 1. تأكد أن العمل على الفرع الصحيح وادفع التغييرات:
    ```bash
    git status
-   git push origin arena/52ea3d01-maisonpro
+   git push origin arena/fdde5b10-maisonpro
    ```
 2. في Netlify: **Add new site → Import an existing project → GitHub → `abdulrahman119/MaisonPRO`**.
-3. اختر الفرع `arena/52ea3d01-maisonpro`. لا تعدّل إعدادات البناء: `netlify.toml` يضبط `npm run build` و `publish = dist` تلقائياً.
-4. أضف متغيرات البيئة من الخطوتين 2 و 3، ثم **Deploy site**.
+3. اختر الفرع `arena/fdde5b10-maisonpro`. لا تعدّل إعدادات البناء: `netlify.toml` يضبط `npm run build` و `publish = dist` تلقائياً.
+4. **لا حاجة لأي متغير لاستقبال الطلبات** (الخطوة 3 تعمل تلقائياً). أضف فقط `DEMO_MODE=0` يوم الإطلاق و `SITE_URL` عند ربط الدومين، ثم **Deploy site**.
 5. افتح الرابط الذي يعطيك إياه Netlify (مثل `https://maisonpro-dj.netlify.app`) وتحقق من:
    - شريط «نسخة تجريبية» يظهر أعلى الصفحة،
    - `view-source:` يحتوي على canonical و `og:image` بنفس رابط Netlify (لا `maisonpro.dj` ولا `github.io`)،
    - `/robots.txt` و `/sitemap.xml` يعملان،
-   - `/admin` يحوّلك إلى `#admin`.
+   - `/admin` يحوّلك إلى `#admin`،
+   - تبويب **Forms** في Netlify يعرض النموذج `add-property`،
+   - طلب تجريبي من النموذج يظهر في **Forms → Submissions**.
 
-**بديل Vercel:** استورد نفس المستودع؛ `vercel.json` يضبط `npm run build` و `outputDirectory: dist`.
+**بديل Vercel:** استورد نفس المستودع؛ `vercel.json` يضبط `npm run build` و `outputDirectory: dist` — ولا تنسَ ضبط `FORMS_ENDPOINT` كما في نهاية الخطوة 3.
 
 ---
 
@@ -179,18 +212,18 @@ FORMS_API_KEY  = <anon public key>
 ## الخطوة 8 — قائمة فحص ما قبل الإطلاق
 
 ```bash
-npm run check     # ترجمات + ملفات مفقودة + معرّفات مكررة
+npm test          # فحص ثابت + اختبارات طبقة النماذج
 npm run build     # بناء dist/ وطباعة تقرير الإعدادات
 ```
 
-- [ ] `npm run check` يخرج «✓ فحص ما قبل الإطلاق ناجح»
-- [ ] تقرير البناء يعرض `SITE_URL` الصحيح و `FORMS_ENDPOINT` مضبوطاً
+- [ ] `npm test` يخرج «✓ كل اختبارات النماذج ناجحة» و «✓ فحص ما قبل الإطلاق ناجح»
+- [ ] تقرير البناء يعرض `SITE_URL` الصحيح و `FORMS_PROVIDER = netlify` و `FORMS_ENDPOINT = /`
 - [ ] اللغات الثلاث (ar / fr / en) تعمل واتجاه RTL/LTR يتبدّل بشكل صحيح
 - [ ] العرض على الجوال (390px) والتابلت والشاشة الكبيرة
 - [ ] البحث والفلاتر والترتيب والمفضلة وتحويل العملة
 - [ ] رابط `?property=MP-1041` يفتح تفاصيل العقار، و `?type=villa&deal=sale` يطبّق الفلترة
 - [ ] كل أزرار واتساب تفتح `wa.me` برقمك الصحيح ورسالة معبّأة
-- [ ] إرسال نموذج تجريبي يصل للبريد/قاعدة البيانات فعلاً (الخطوة 3)
+- [ ] إرسال نموذج تجريبي يظهر في **Netlify Forms → Submissions** ويصل إشعار البريد (الخطوة 3)
 - [ ] زر «تابع حالة طلبك» يعمل بعد الإرسال
 - [ ] صفحات `privacy.html` و `terms.html` و `404.html` تفتح من الفوتر
 - [ ] معاينة المشاركة (Facebook / LinkedIn / واتساب) تُظهر العنوان والصورة الصحيحة
@@ -216,6 +249,7 @@ npm run build     # بناء dist/ وطباعة تقرير الإعدادات
 - جدّث الإعلانات أسبوعياً واحذف المؤجّر/المباع فوراً.
 - أضف أداة تحليلات تحترم الخصوصية (Plausible / Umami) وحدّث `privacy.html` و CSP وفقاً لذلك.
 - احتفظ بنسخة احتياطية من `data.js` والصور خارج المستودع.
+- راقب عدد طلبات Netlify Forms (100/شهر مجاناً) وانتقل إلى Formspree/Supabase عند الاقتراب من الحد.
 - **التطوير التالي** عند الحاجة: لوحة إدارة حقيقية على الخادم، رفع صور للسحابة، حسابات ملاك، خريطة أحياء جيبوتي، إشعارات العقارات الجديدة.
 
 ---
@@ -226,6 +260,7 @@ npm run build     # بناء dist/ وطباعة تقرير الإعدادات
 |---|---|---|
 | لوحة الإدارة تعمل داخل متصفح الزائر فقط (الرمز التجريبي `2530`) | لا تُدار الإعلانات مركزياً، وأي زائر يفتحها يرى بياناته المحلية فقط | ربط `MPStore` بـ API حقيقي (الواجهة معزولة في `store.js`) |
 | الطلبات تُحفظ محلياً + تُرسل لخدمة النماذج | لا توجد قاعدة بيانات مركزية للإعلانات | Supabase أو backend |
+| Netlify Forms: 100 طلب/شهر مجاناً | قد تتوقف الطلبات عند تجاوز الحد | Formspree / Supabase (الخطوة 3) |
 | الصور لا تُرفع للخادم | يحتاج الفريق استلامها عبر واتساب | رفع إلى Supabase Storage / Cloudinary |
 | لا دفع، لا عقود، لا حسابات | الموقع عرض وتواصل فقط | مرحلة لاحقة |
 | الوضع التجريبي يمنع الفهرسة | لا يظهر الموقع في نتائج البحث حتى `DEMO_MODE=0` | مقصود حتى استبدال البيانات |
@@ -238,6 +273,8 @@ npm run build     # بناء dist/ وطباعة تقرير الإعدادات
 |---|---|
 | `npm run serve` | معاينة محلية على `8080` |
 | `npm run check` | فحص ما قبل الإطلاق |
+| `npm test` | الفحص الثابت + اختبارات النماذج |
+| `npm run test:forms` | اختبارات طبقة الإرسال وحدها |
 | `npm run build` | بناء `dist/` الجاهز للنشر |
 | `node tools/build.mjs` | نفس البناء مباشرة |
-| `git push origin arena/52ea3d01-maisonpro` | دفع التغييرات للفرع الحالي |
+| `git push origin arena/fdde5b10-maisonpro` | دفع التغييرات للفرع الحالي |
